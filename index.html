@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0d0f12">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<title>Tempi e Video</title>
+<style>
+:root{--bg:#0d0f12;--panel:#161a20;--line:#262c35;--fg:#eef1f4;--mut:#8b95a1;--rec:#ff3b30;--go:#28c76f;--lap:#ffb020;--stop:#e8ecf0;--acc:#4da3ff;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--fg)}
+body{font:15px/1.4 system-ui,Roboto,sans-serif;-webkit-tap-highlight-color:transparent;
+ padding:max(10px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(28px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
+#app{max-width:560px;margin:0 auto}
+header{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:2px 0 10px}
+h1{font-size:18px;margin:0;font-weight:700}
+h2{font-size:17px;margin:0}
+.mut{color:var(--mut);font-size:13px}
+select,input{background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:9px 10px;font:inherit;min-width:0}
+input{width:100%}
+.cam{position:relative;background:#000;border-radius:14px;overflow:hidden;height:38vh;min-height:200px}
+.cam video{width:100%;height:100%;object-fit:contain;display:block}
+#recBadge{position:absolute;left:10px;top:10px;display:flex;gap:6px;align-items:center;background:rgba(0,0,0,.65);padding:4px 10px;border-radius:99px;font-variant-numeric:tabular-nums;font-size:13px}
+#recBadge i{width:9px;height:9px;border-radius:50%;background:var(--rec);animation:bl 1s infinite}
+@keyframes bl{50%{opacity:.25}}
+@media (prefers-reduced-motion:reduce){#recBadge i{animation:none}}
+.camMsg{position:absolute;inset:0;display:grid;place-items:center;padding:16px;text-align:center;color:var(--mut)}
+.row{display:flex;gap:8px;margin-top:8px}
+.btn{flex:1;min-height:56px;border:0;border-radius:14px;font:700 16px system-ui,Roboto,sans-serif;color:#0d0f12;background:var(--stop);touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.btn:active{filter:brightness(.85)}
+.btn:disabled{opacity:.3}
+.btn.rec{background:var(--rec);color:#fff}
+.btn.rec.on{background:#fff;color:var(--rec)}
+.btn.ghost{background:var(--panel);color:var(--fg);border:1px solid var(--line);font-weight:600}
+.btn.go{background:var(--go)}
+.btn.lap{background:var(--lap);flex:1.4}
+.btn.sm{flex:none;min-height:38px;padding:0 12px;font-size:13px;border-radius:10px}
+.btn.armed{background:var(--rec);color:#fff;border-color:var(--rec)}
+.note{margin:8px 0 0}
+#saved{margin-top:8px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+#saved .row{margin-top:8px}
+.sec{margin-top:18px}
+.sec>.lbl{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);margin:0 0 8px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 0 6px}
+.chip{flex:none;padding:11px 16px;border-radius:99px;background:var(--panel);border:1px solid var(--line);color:var(--fg);font:600 15px system-ui,Roboto,sans-serif}
+.chip.on{background:var(--acc);color:#0d0f12;border-color:var(--acc)}
+#clock{font:700 clamp(46px,17vw,84px)/1 ui-monospace,"Roboto Mono",Menlo,monospace;font-variant-numeric:tabular-nums;text-align:center;padding:16px 0 8px}
+.tbtns .btn{min-height:88px;font-size:18px}
+.live{margin-top:10px;font-variant-numeric:tabular-nums}
+.live div{display:flex;justify-content:space-between;padding:5px 2px;border-bottom:1px solid var(--line)}
+.run{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:10px}
+.run .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:6px}
+.run .tot{font:700 20px ui-monospace,"Roboto Mono",monospace;font-variant-numeric:tabular-nums}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);font-weight:600;text-align:right;padding:4px}
+th:first-child,td:first-child{text-align:left}
+td{padding:7px 4px;border-top:1px solid var(--line);text-align:right}
+tr.fin td{font-weight:700}
+.rh{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+.lk{display:block;margin:6px 0 2px;font-size:13px;color:var(--mut)}
+.lk input{margin-top:4px}
+#toast{position:fixed;left:50%;bottom:max(20px,env(safe-area-inset-bottom));transform:translateX(-50%);background:#fff;color:#0d0f12;padding:10px 16px;border-radius:99px;font-weight:600;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90vw;text-align:center;z-index:5}
+#toast.on{opacity:1}
+a.btn{display:grid;place-items:center;text-decoration:none;margin-bottom:6px}
+</style>
+</head>
+<body>
+<div id="app">
+ <header>
+  <h1>Tempi e Video</h1>
+  <select id="quality" aria-label="Qualità video">
+   <option value="720">720p 30</option>
+   <option value="1080">1080p 30</option>
+   <option value="1080-60">1080p 60</option>
+  </select>
+ </header>
+
+ <section>
+  <div class="cam">
+   <video id="preview" autoplay muted playsinline></video>
+   <div id="recBadge" hidden><i></i><span id="recTime">0:00</span></div>
+   <div id="camMsg" class="camMsg">Avvio fotocamera…</div>
+  </div>
+  <div class="row">
+   <button id="btnRec" class="btn rec">● REC</button>
+   <button id="btnFlip" class="btn ghost">Cambia camera</button>
+  </div>
+  <p class="mut note">Durante la registrazione resta in questa schermata: se esci dall'app la registrazione si interrompe.</p>
+  <div id="saved" hidden>
+   <div id="savedName"></div>
+   <div class="mut">Scaricato in automatico nella cartella Download.</div>
+   <div class="row">
+    <button id="btnShareV" class="btn go">Condividi video</button>
+    <button id="btnAgain" class="btn ghost">Scarica ancora</button>
+   </div>
+  </div>
+ </section>
+
+ <section class="sec">
+  <p class="lbl">Atleta</p>
+  <div id="chips" class="chips"></div>
+  <form id="addF" class="row">
+   <input id="newA" placeholder="Nome atleta" autocomplete="off" enterkeyhint="done">
+   <button class="btn go" style="flex:none;padding:0 18px">Aggiungi</button>
+  </form>
+ </section>
+
+ <section class="sec">
+  <p class="lbl">Cronometro</p>
+  <div id="clock">0:00.00</div>
+  <div class="row tbtns">
+   <button id="bStart" class="btn go">START</button>
+   <button id="bLap" class="btn lap" disabled>INTERTEMPO</button>
+   <button id="bStop" class="btn" disabled>STOP</button>
+  </div>
+  <div id="live" class="live"></div>
+ </section>
+
+ <section class="sec" id="results"></section>
+</div>
+<div id="toast" role="status"></div>
+
+<script>
+'use strict';
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=ms=>{ms=Math.max(0,Math.round(Number(ms)||0));const cs=Math.floor(ms/10)%100,s=Math.floor(ms/1000)%60,m=Math.floor(ms/60000);return m+':'+String(s).padStart(2,'0')+'.'+String(cs).padStart(2,'0')};
+const pad=n=>String(n).padStart(2,'0');
+const stamp=()=>{const d=new Date();return d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+'_'+pad(d.getHours())+pad(d.getMinutes())};
+const slug=s=>String(s).normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-zA-Z0-9]+/g,'_').replace(/^_+|_+$/g,'')||'atleta';
+const enc=o=>{const b=new TextEncoder().encode(JSON.stringify(o));let s='';b.forEach(x=>s+=String.fromCharCode(x));return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')};
+const dec=s=>{s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';const bin=atob(s);return JSON.parse(new TextDecoder().decode(Uint8Array.from(bin,c=>c.charCodeAt(0))))};
+const buzz=()=>{try{navigator.vibrate&&navigator.vibrate(30)}catch{}};
+let toastT;
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),2600)}
+
+/* ---------- dati ---------- */
+const LS='tempi_video_v1';
+let data={athletes:[],current:null,quality:'1080'};
+try{const d=JSON.parse(localStorage.getItem(LS));if(d&&Array.isArray(d.athletes))data=d}catch{}
+const save=()=>{try{localStorage.setItem(LS,JSON.stringify(data))}catch{}};
+const cur=()=>data.athletes.find(a=>a.id===data.current)||null;
+
+/* ---------- tabella di una prova ---------- */
+function runHTML(r,i,withDel){
+ const rows=[];let prev=0;
+ (r.l||[]).forEach((l,k)=>{rows.push(['Int. '+(k+1),Number(l.c)-prev,Number(l.c),l.v]);prev=Number(l.c)});
+ rows.push(['Arrivo',Number(r.t)-prev,Number(r.t),r.tv]);
+ const hasV=rows.some(x=>x[3]!=null);
+ let when='';try{when=new Date(r.d).toLocaleString('it-IT',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}catch{}
+ const body=rows.map((x,k)=>`<tr${k===rows.length-1?' class="fin"':''}><td>${x[0]}</td><td>${fmt(x[1])}</td><td>${fmt(x[2])}</td>${hasV?`<td>${x[3]!=null?fmt(x[3]):'–'}</td>`:''}</tr>`).join('');
+ return `<div class="run"><div class="top"><div><b>Prova ${i+1}</b> <span class="mut">${esc(when)}</span></div><div class="tot">${fmt(r.t)}</div></div>
+ <table><thead><tr><th>Punto</th><th>Parziale</th><th>Totale</th>${hasV?'<th>Nel video</th>':''}</tr></thead><tbody>${body}</tbody></table>
+ ${r.sv!=null?`<div class="mut" style="margin-top:6px">Start al ${fmt(r.sv)} del video</div>`:''}
+ ${r.vf?`<div class="mut">Video: ${esc(r.vf)}</div>`:''}
+ ${withDel?`<div class="row"><button class="btn ghost sm" data-act="delrun" data-id="${esc(r.id)}">Elimina prova</button></div>`:''}</div>`;
+}
+
+/* ---------- vista atleta (link condiviso) ---------- */
+function viewer(p){
+ document.title='Tempi '+p.n;
+ const link=/^https?:\/\//i.test(p.u||'')?`<a class="btn go" href="${esc(p.u)}" target="_blank" rel="noopener">Scarica il video</a>`:'';
+ $('#app').innerHTML=`<header><h1>Tempi di ${esc(p.n)}</h1></header>${link}${(p.r||[]).map((r,i)=>runHTML(r,i,false)).reverse().join('')||'<p class="mut">Nessuna prova.</p>'}`;
+}
+
+/* ---------- fotocamera e registrazione ---------- */
+const QUAL={'720':{w:1280,h:720,fps:30,br:5e6},'1080':{w:1920,h:1080,fps:30,br:10e6},'1080-60':{w:1920,h:1080,fps:60,br:14e6}};
+let stream=null,facing='environment',rec=null,chunks=[],recording=false,recStart=0,recTimer=null,recRuns=[],lastVideo=null;
+const pickMime=()=>['video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4','video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'].find(m=>window.MediaRecorder&&MediaRecorder.isTypeSupported(m))||'';
+
+async function startCamera(){
+ const msg=$('#camMsg');
+ if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}
+ if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){msg.hidden=false;msg.textContent='Fotocamera non disponibile: la pagina deve essere aperta su https.';return}
+ const q=QUAL[data.quality]||QUAL['1080'];
+ const tries=[
+  {audio:true,video:{facingMode:{ideal:facing},width:{ideal:q.w},height:{ideal:q.h},frameRate:{ideal:q.fps}}},
+  {audio:true,video:{facingMode:{ideal:facing}}}
+ ];
+ let err=null;
+ for(const c of tries){
+  try{stream=await navigator.mediaDevices.getUserMedia(c);err=null;break}catch(e){err=e;if(e.name==='NotAllowedError')break}
+ }
+ if(!stream){msg.hidden=false;msg.textContent=err&&err.name==='NotAllowedError'?'Permesso negato: consenti fotocamera e microfono a questo sito dalle impostazioni di Chrome.':'Impossibile avviare la fotocamera.';return}
+ $('#preview').srcObject=stream;msg.hidden=true;
+}
+function ensureCam(){if(recording)return;if(!stream||stream.getTracks().some(t=>t.readyState==='ended'))startCamera()}
+
+function startRec(){
+ if(!stream){toast('Fotocamera non pronta');return}
+ const mime=pickMime();const q=QUAL[data.quality]||QUAL['1080'];
+ try{rec=new MediaRecorder(stream,Object.assign({videoBitsPerSecond:q.br},mime?{mimeType:mime}:{}))}catch(e){toast('Registrazione non supportata');return}
+ chunks=[];recRuns=[];
+ rec.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data)};
+ rec.onstart=()=>{recStart=performance.now();recording=true;$('#saved').hidden=true;recTimer=setInterval(()=>{const s=Math.floor((performance.now()-recStart)/1000);$('#recTime').textContent=Math.floor(s/60)+':'+pad(s%60)},500);$('#recTime').textContent='0:00';ui()};
+ rec.onstop=finishRec;
+ rec.onerror=()=>{toast('Errore di registrazione')};
+ rec.start(1000);buzz();
+}
+function stopRec(){if(rec&&rec.state!=='inactive')rec.stop();buzz()}
+function finishRec(){
+ recording=false;clearInterval(recTimer);
+ const type=(rec&&rec.mimeType)||'video/webm';
+ const blob=new Blob(chunks,{type});chunks=[];
+ const ext=/mp4/.test(type)?'mp4':'webm';
+ let a=cur();
+ if(recRuns.length){const last=recRuns[recRuns.length-1];a=data.athletes.find(x=>x.id===last.a)||a}
+ const name=(a?slug(a.name):'video')+'_'+stamp()+'.'+ext;
+ lastVideo={blob,name};
+ recRuns.forEach(rr=>{const at=data.athletes.find(x=>x.id===rr.a);const r=at&&at.runs.find(x=>x.id===rr.id);if(r)r.vf=name});
+ recRuns=[];save();ui();renderResults();
+ dl(blob,name);
+ $('#savedName').innerHTML='<b>'+esc(name)+'</b>';$('#saved').hidden=false;
+}
+function dl(blob,name){
+ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();
+ setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},5000);
+}
+async function shareVideo(){
+ if(!lastVideo)return;
+ const f=new File([lastVideo.blob],lastVideo.name,{type:lastVideo.blob.type});
+ if(navigator.canShare&&navigator.canShare({files:[f]})){
+  try{await navigator.share({files:[f],title:lastVideo.name})}catch(e){if(e.name!=='AbortError')toast('Condivisione non riuscita')}
+ }else toast('Condivisione non supportata: usa il file scaricato');
+}
+
+/* ---------- cronometro ---------- */
+let running=false,t0=0,raf=0,lapsLive=[],runVid0=null,runAth=null;
+function tick(){if(!running)return;$('#clock').textContent=fmt(performance.now()-t0);raf=requestAnimationFrame(tick)}
+function startT(){
+ if(running)return;
+ if(!cur()){toast('Aggiungi o scegli un atleta');return}
+ running=true;runAth=cur().id;lapsLive=[];t0=performance.now();
+ runVid0=recording?Math.round(t0-recStart):null;
+ renderLive();ui();tick();buzz();
+}
+function lapT(){
+ if(!running)return;
+ const now=performance.now(),c=Math.round(now-t0),last=lapsLive.length?lapsLive[lapsLive.length-1].c:0;
+ if(c-last<200)return;
+ lapsLive.push({c,v:recording?Math.round(now-recStart):null});
+ renderLive();buzz();
+}
+function stopT(){
+ if(!running)return;
+ const now=performance.now();running=false;cancelAnimationFrame(raf);
+ const t=Math.round(now-t0);$('#clock').textContent=fmt(t);
+ const a=data.athletes.find(x=>x.id===runAth);
+ if(a){
+  const run={id:String(Date.now()),d:new Date().toISOString(),t,l:lapsLive,sv:runVid0,tv:recording?Math.round(now-recStart):null,vf:null};
+  a.runs.push(run);
+  if(recording)recRuns.push({a:a.id,id:run.id});
+  save();
+ }
+ lapsLive=[];ui();renderLive();renderResults();buzz();
+}
+
+/* ---------- interfaccia ---------- */
+function ui(){
+ $('#bStart').disabled=running;$('#bLap').disabled=!running;$('#bStop').disabled=!running;
+ $('#chips').style.pointerEvents=running?'none':'';$('#chips').style.opacity=running?.5:1;
+ const b=$('#btnRec');b.textContent=recording?'■ STOP REC':'● REC';b.classList.toggle('on',recording);
+ $('#btnFlip').disabled=recording;$('#quality').disabled=recording;$('#recBadge').hidden=!recording;
+}
+function renderChips(){
+ $('#chips').innerHTML=data.athletes.length?data.athletes.map(a=>`<button class="chip${a.id===data.current?' on':''}" data-id="${esc(a.id)}">${esc(a.name)}</button>`).join(''):'<span class="mut">Nessun atleta: aggiungine uno.</span>';
+}
+function renderLive(){
+ $('#live').innerHTML=lapsLive.map((l,k)=>`<div><span>Int. ${k+1}</span><span>${fmt(l.c)} <span class="mut">(+${fmt(l.c-(k?lapsLive[k-1].c:0))})</span></span></div>`).join('');
+}
+function renderResults(){
+ const a=cur(),box=$('#results');
+ if(!a){box.innerHTML='';return}
+ const runs=a.runs.map((r,i)=>runHTML(r,i,true)).reverse().join('')||'<p class="mut">Nessuna prova ancora.</p>';
+ box.innerHTML=`<p class="lbl" style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);margin:0 0 8px">Tempi</p>
+ <div class="rh"><h2>${esc(a.name)}</h2><button class="btn ghost sm" data-act="delath">Elimina atleta</button></div>
+ <label class="lk">Link del video per l'atleta (opzionale, es. Drive)<input id="vlink" type="url" inputmode="url" placeholder="Incolla qui il link" value="${esc(a.link||'')}"></label>
+ <div class="row"><button class="btn ghost" data-act="shareT">Condividi tempi</button><button class="btn ghost" data-act="csv">Esporta CSV</button></div>${runs}`;
+}
+function summary(a){
+ return a.name+'\n'+a.runs.map((r,i)=>{let prev=0;const ints=(r.l||[]).map(l=>{const s=fmt(l.c-prev);prev=l.c;return s});return 'Prova '+(i+1)+': '+fmt(r.t)+(ints.length?' (int. '+ints.join(' · ')+')':'')}).join('\n');
+}
+async function shareTimes(){
+ const a=cur();if(!a||!a.runs.length){toast('Nessun tempo da condividere');return}
+ const url=location.origin+location.pathname+'#v='+enc({n:a.name,u:a.link||'',r:a.runs});
+ if(navigator.share){try{await navigator.share({title:'Tempi '+a.name,text:summary(a),url});return}catch(e){if(e.name==='AbortError')return}}
+ try{await navigator.clipboard.writeText(url);toast('Link copiato')}catch{toast('Copia non riuscita')}
+}
+function csv(){
+ const L=[['Atleta','Prova','Data','Punto','Parziale','Totale','Tempo nel video','File video']];
+ data.athletes.forEach(a=>a.runs.forEach((r,i)=>{
+  let prev=0;const d=new Date(r.d).toLocaleString('it-IT');
+  (r.l||[]).forEach((l,k)=>{L.push([a.name,i+1,d,'Intertempo '+(k+1),fmt(l.c-prev),fmt(l.c),l.v!=null?fmt(l.v):'',r.vf||''])});
+  const lastC=(r.l&&r.l.length)?r.l[r.l.length-1].c:0;
+  L.push([a.name,i+1,d,'Arrivo',fmt(r.t-lastC),fmt(r.t),r.tv!=null?fmt(r.tv):'',r.vf||'']);
+ }));
+ const s='﻿'+L.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(';')).join('\r\n');
+ dl(new Blob([s],{type:'text/csv;charset=utf-8'}),'tempi_'+stamp()+'.csv');
+}
+function arm(b,fn){
+ if(b.dataset.arm){fn();return}
+ b.dataset.arm='1';const old=b.textContent;b.textContent='Conferma?';b.classList.add('armed');
+ setTimeout(()=>{if(b.isConnected){delete b.dataset.arm;b.textContent=old;b.classList.remove('armed')}},3000);
+}
+
+/* ---------- eventi ---------- */
+function bind(){
+ $('#btnRec').onclick=()=>recording?stopRec():startRec();
+ $('#btnFlip').onclick=()=>{facing=facing==='environment'?'user':'environment';startCamera()};
+ $('#quality').onchange=e=>{data.quality=e.target.value;save();startCamera()};
+ $('#bStart').onclick=startT;$('#bLap').onclick=lapT;$('#bStop').onclick=stopT;
+ $('#btnShareV').onclick=shareVideo;
+ $('#btnAgain').onclick=()=>lastVideo&&dl(lastVideo.blob,lastVideo.name);
+ $('#addF').onsubmit=e=>{
+  e.preventDefault();const n=$('#newA').value.trim();if(!n)return;
+  const a={id:'a'+Date.now(),name:n,link:'',runs:[]};data.athletes.push(a);data.current=a.id;
+  $('#newA').value='';save();renderChips();renderResults();
+ };
+ $('#chips').onclick=e=>{const b=e.target.closest('.chip');if(!b)return;data.current=b.dataset.id;save();renderChips();renderResults()};
+ $('#results').addEventListener('input',e=>{if(e.target.id==='vlink'){const a=cur();if(a){a.link=e.target.value.trim();save()}}});
+ $('#results').onclick=e=>{
+  const b=e.target.closest('[data-act]');if(!b)return;const act=b.dataset.act,a=cur();
+  if(act==='shareT')shareTimes();
+  else if(act==='csv')csv();
+  else if(act==='delrun')arm(b,()=>{a.runs=a.runs.filter(r=>r.id!==b.dataset.id);save();renderResults()});
+  else if(act==='delath')arm(b,()=>{data.athletes=data.athletes.filter(x=>x.id!==a.id);data.current=data.athletes.length?data.athletes[0].id:null;save();renderChips();renderResults()});
+ };
+}
+let wake=null;
+async function wl(){try{if(navigator.wakeLock)wake=await navigator.wakeLock.request('screen')}catch{}}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){wl();ensureCam()}});
+
+function init(){
+ if(!data.current&&data.athletes.length)data.current=data.athletes[0].id;
+ $('#quality').value=data.quality;
+ bind();renderChips();renderResults();renderLive();ui();startCamera();wl();
+ if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+
+if(location.hash.startsWith('#v=')){
+ try{viewer(dec(location.hash.slice(3)))}catch{document.body.innerHTML='<p style="padding:16px">Link non valido.</p>'}
+}else init();
+</script>
+</body>
+</html>
