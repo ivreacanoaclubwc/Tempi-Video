@@ -3,91 +3,151 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0d0f12">
+<meta name="theme-color" content="#000000">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <title>Tempi e Video</title>
 <style>
 :root{--bg:#0d0f12;--panel:#161a20;--line:#262c35;--fg:#eef1f4;--mut:#8b95a1;--rec:#ff3b30;--go:#28c76f;--lap:#ffb020;--stop:#e8ecf0;--acc:#4da3ff;color-scheme:dark}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html,body{margin:0;background:var(--bg);color:var(--fg)}
 body{font:15px/1.4 system-ui,Roboto,sans-serif;-webkit-tap-highlight-color:transparent;
  padding:max(10px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(28px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
-#app{max-width:560px;margin:0 auto}
-header{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:2px 0 10px}
+body.app{position:fixed;inset:0;padding:0;overflow:hidden;overscroll-behavior:none;user-select:none;-webkit-user-select:none}
+body.app input{user-select:text;-webkit-user-select:text}
 h1{font-size:18px;margin:0;font-weight:700}
 h2{font-size:17px;margin:0}
 .mut{color:var(--mut);font-size:13px}
 select,input{background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:9px 10px;font:inherit;min-width:0}
 input{width:100%}
-.cam{position:relative;background:#000;border-radius:14px;overflow:hidden;height:38vh;min-height:200px}
-.cam video{width:100%;height:100%;object-fit:contain;display:block}
-#recBadge{position:absolute;left:10px;top:10px;display:flex;gap:6px;align-items:center;background:rgba(0,0,0,.65);padding:4px 10px;border-radius:99px;font-variant-numeric:tabular-nums;font-size:13px}
+
+/* ---------- schermata ripresa ---------- */
+#cam{position:absolute;inset:0;background:#000}
+#preview{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000}
+.camMsg{position:absolute;inset:0;display:grid;place-items:center;padding:16px;text-align:center;color:#aab3bd;pointer-events:none}
+.ob{border:0;border-radius:12px;font:700 15px system-ui,Roboto,sans-serif;color:#0d0f12;background:var(--stop);touch-action:manipulation;user-select:none;-webkit-user-select:none;box-shadow:0 1px 6px rgba(0,0,0,.5)}
+.ob:active{filter:brightness(.8)}
+.ob:disabled{opacity:.35}
+.ob.glass{background:rgba(20,24,30,.72);color:#fff;border:1px solid rgba(255,255,255,.25)}
+.ob.sm{height:40px;padding:0 14px;font-size:14px}
+.ob.go{background:var(--go)}
+.ob.lap{background:var(--lap)}
+.ob.r50{background:var(--rec);color:#fff}
+.ob.rec{background:var(--rec);color:#fff}
+.ob.rec.on{background:#fff;color:var(--rec)}
+select.glass{height:40px;max-width:42vw;background:rgba(20,24,30,.72);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:12px;padding:0 10px;font:600 14px system-ui,Roboto,sans-serif}
+
+#top{position:absolute;left:0;right:0;top:0;display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:start;
+ padding:max(8px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) 0 max(10px,env(safe-area-inset-left))}
+#top .g{display:flex;gap:8px;align-items:center;min-width:0}
+#top .l{justify-self:start}
+#top .m{flex-direction:column;gap:4px;justify-self:center}
+#top .r{justify-self:end}
+#clock{font:700 34px/1.1 ui-monospace,"Roboto Mono",Menlo,monospace;font-variant-numeric:tabular-nums;background:rgba(0,0,0,.55);color:#fff;padding:2px 14px;border-radius:12px}
+#hud{background:rgba(0,0,0,.55);color:#fff;padding:2px 10px;border-radius:10px;font-size:12px;font-variant-numeric:tabular-nums;max-width:46vw;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#hud:empty{display:none}
+#recBadge{display:flex;gap:6px;align-items:center;background:rgba(0,0,0,.6);color:#fff;padding:6px 10px;border-radius:99px;font-size:13px;font-variant-numeric:tabular-nums}
 #recBadge i{width:9px;height:9px;border-radius:50%;background:var(--rec);animation:bl 1s infinite}
 @keyframes bl{50%{opacity:.25}}
 @media (prefers-reduced-motion:reduce){#recBadge i{animation:none}}
-.camMsg{position:absolute;inset:0;display:grid;place-items:center;padding:16px;text-align:center;color:var(--mut)}
+
+#left{position:absolute;top:calc(max(8px,env(safe-area-inset-top)) + 50px);bottom:max(10px,env(safe-area-inset-bottom));left:max(10px,env(safe-area-inset-left));width:64px;display:flex;flex-direction:column;align-items:center;gap:8px}
+#zoomLbl{background:rgba(0,0,0,.55);color:#fff;border-radius:10px;padding:2px 8px;font:600 13px ui-monospace,"Roboto Mono",monospace;font-variant-numeric:tabular-nums}
+#zoom{flex:1;min-height:0;width:44px;margin:0;-webkit-appearance:none;appearance:none;background:transparent;writing-mode:vertical-lr;direction:rtl}
+#zoom::-webkit-slider-runnable-track{width:6px;border-radius:3px;background:rgba(255,255,255,.55)}
+#zoom::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;border-radius:50%;background:#fff;border:2px solid #0d0f12;margin-left:-11px;box-shadow:0 1px 5px rgba(0,0,0,.6)}
+#zoom:disabled{opacity:.35}
+#btnRec{width:64px;height:50px;flex:none;font-size:14px}
+
+#right{position:absolute;right:max(10px,env(safe-area-inset-right));top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px;width:112px}
+#right .ob{height:52px;width:100%;padding:0 4px;font-size:14px}
+
+#pen{position:absolute;left:50%;transform:translateX(-50%);bottom:max(10px,env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;gap:4px}
+#penLbl{background:rgba(0,0,0,.55);color:#fff;border-radius:10px;padding:2px 10px;font-size:12px;max-width:50vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prow{display:flex;gap:8px}
+.prow .ob{height:46px;min-width:76px}
+
+#rot{position:fixed;inset:0;z-index:50;background:var(--bg);display:none;place-items:center;text-align:center;padding:24px;font-size:18px;font-weight:600}
+@media (orientation:portrait){body.app #rot{display:grid}}
+
+/* ---------- schermata tempi ---------- */
+#tempi{position:fixed;inset:0;z-index:30;background:var(--bg);overflow:auto;
+ padding:0 max(16px,env(safe-area-inset-right)) 40px max(16px,env(safe-area-inset-left))}
+.th{position:sticky;top:0;z-index:2;background:var(--bg);display:flex;align-items:center;gap:12px;padding:max(8px,env(safe-area-inset-top)) 0 8px}
+.tc{max-width:760px;margin:0 auto}
+.lbl{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);margin:16px 0 8px}
 .row{display:flex;gap:8px;margin-top:8px}
-.btn{flex:1;min-height:56px;border:0;border-radius:14px;font:700 16px system-ui,Roboto,sans-serif;color:#0d0f12;background:var(--stop);touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.btn{flex:1;min-height:52px;border:0;border-radius:14px;font:700 16px system-ui,Roboto,sans-serif;color:#0d0f12;background:var(--stop);touch-action:manipulation}
 .btn:active{filter:brightness(.85)}
 .btn:disabled{opacity:.3}
-.btn.rec{background:var(--rec);color:#fff}
-.btn.rec.on{background:#fff;color:var(--rec)}
 .btn.ghost{background:var(--panel);color:var(--fg);border:1px solid var(--line);font-weight:600}
 .btn.go{background:var(--go)}
-.btn.lap{background:var(--lap);flex:1.4}
 .btn.sm{flex:none;min-height:38px;padding:0 12px;font-size:13px;border-radius:10px}
 .btn.armed{background:var(--rec);color:#fff;border-color:var(--rec)}
-.note{margin:8px 0 0}
-#saved{margin-top:8px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
-#saved .row{margin-top:8px}
-.sec{margin-top:18px}
-.sec>.lbl{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);margin:0 0 8px}
+a.btn{display:grid;place-items:center;text-decoration:none;margin-bottom:6px}
 .chips{display:flex;gap:8px;overflow-x:auto;padding:2px 0 6px}
 .chip{flex:none;padding:11px 16px;border-radius:99px;background:var(--panel);border:1px solid var(--line);color:var(--fg);font:600 15px system-ui,Roboto,sans-serif}
 .chip.on{background:var(--acc);color:#0d0f12;border-color:var(--acc)}
-#clock{font:700 clamp(46px,17vw,84px)/1 ui-monospace,"Roboto Mono",Menlo,monospace;font-variant-numeric:tabular-nums;text-align:center;padding:16px 0 8px}
-.tbtns .btn{min-height:88px;font-size:18px}
-.live{margin-top:10px;font-variant-numeric:tabular-nums}
-.live div{display:flex;justify-content:space-between;padding:5px 2px;border-bottom:1px solid var(--line)}
+#saved{margin-top:12px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
 .run{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:10px}
-.run .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:6px}
-.run .tot{font:700 20px ui-monospace,"Roboto Mono",monospace;font-variant-numeric:tabular-nums}
+.run .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:4px}
+.run .tot{font:700 22px ui-monospace,"Roboto Mono",monospace;font-variant-numeric:tabular-nums}
+.run .sub{margin-bottom:6px}
 table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
 th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);font-weight:600;text-align:right;padding:4px}
 th:first-child,td:first-child{text-align:left}
 td{padding:7px 4px;border-top:1px solid var(--line);text-align:right}
 tr.fin td{font-weight:700}
-.rh{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+.p2{color:var(--lap);font-weight:700}
+.p50{color:var(--rec);font-weight:700}
+.pt{margin-top:8px;font-weight:600}
+.rh{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:14px 0 8px}
 .lk{display:block;margin:6px 0 2px;font-size:13px;color:var(--mut)}
 .lk input{margin-top:4px}
-#toast{position:fixed;left:50%;bottom:max(20px,env(safe-area-inset-bottom));transform:translateX(-50%);background:#fff;color:#0d0f12;padding:10px 16px;border-radius:99px;font-weight:600;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90vw;text-align:center;z-index:5}
+#toast{position:fixed;left:50%;top:max(56px,calc(env(safe-area-inset-top) + 48px));transform:translateX(-50%);background:#fff;color:#0d0f12;padding:9px 16px;border-radius:99px;font-weight:600;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;max-width:80vw;text-align:center;z-index:60}
 #toast.on{opacity:1}
-a.btn{display:grid;place-items:center;text-decoration:none;margin-bottom:6px}
+#viewer{max-width:560px;margin:0 auto}
 </style>
 </head>
 <body>
-<div id="app">
- <header>
-  <h1>Tempi e Video</h1>
-  <select id="quality" aria-label="Qualità video">
-   <option value="720">720p 30</option>
-   <option value="1080">1080p 30</option>
-   <option value="1080-60">1080p 60</option>
-  </select>
- </header>
 
- <section>
-  <div class="cam">
-   <video id="preview" autoplay muted playsinline></video>
+<div id="viewer" hidden></div>
+
+<div id="cam" hidden>
+ <video id="preview" autoplay muted playsinline></video>
+ <div id="camMsg" class="camMsg">Avvio fotocamera…</div>
+ <div id="top">
+  <div class="g l">
+   <button id="bTempi" class="ob glass sm">Tempi</button>
    <div id="recBadge" hidden><i></i><span id="recTime">0:00</span></div>
-   <div id="camMsg" class="camMsg">Avvio fotocamera…</div>
   </div>
-  <div class="row">
-   <button id="btnRec" class="btn rec">● REC</button>
-   <button id="btnFlip" class="btn ghost">Cambia camera</button>
+  <div class="g m"><div id="clock">0:00.00</div><div id="hud"></div></div>
+  <div class="g r"><select id="athSel" class="glass" aria-label="Atleta"></select></div>
+ </div>
+ <div id="left">
+  <div id="zoomLbl">×1.0</div>
+  <input id="zoom" type="range" min="1" max="10" step="0.1" value="1" aria-label="Zoom">
+  <button id="btnRec" class="ob rec">● REC</button>
+ </div>
+ <div id="right">
+  <button id="bStart" class="ob go">START</button>
+  <button id="bLap" class="ob lap" disabled>INTERTEMPO</button>
+  <button id="bStop" class="ob" disabled>STOP</button>
+ </div>
+ <div id="pen">
+  <div id="penLbl">Penalità</div>
+  <div class="prow">
+   <button id="pUndo" class="ob glass">Annulla</button>
+   <button id="p2" class="ob lap">+2</button>
+   <button id="p50" class="ob r50">+50</button>
   </div>
-  <p class="mut note">Durante la registrazione resta in questa schermata: se esci dall'app la registrazione si interrompe.</p>
+ </div>
+</div>
+
+<div id="tempi" hidden>
+ <div class="th"><button id="bBack" class="btn ghost sm">← Ripresa</button><h1>Tempi</h1></div>
+ <div class="tc">
   <div id="saved" hidden>
    <div id="savedName"></div>
    <div class="mut">Scaricato in automatico nella cartella Download.</div>
@@ -96,30 +156,27 @@ a.btn{display:grid;place-items:center;text-decoration:none;margin-bottom:6px}
     <button id="btnAgain" class="btn ghost">Scarica ancora</button>
    </div>
   </div>
- </section>
-
- <section class="sec">
   <p class="lbl">Atleta</p>
   <div id="chips" class="chips"></div>
   <form id="addF" class="row">
    <input id="newA" placeholder="Nome atleta" autocomplete="off" enterkeyhint="done">
    <button class="btn go" style="flex:none;padding:0 18px">Aggiungi</button>
   </form>
- </section>
-
- <section class="sec">
-  <p class="lbl">Cronometro</p>
-  <div id="clock">0:00.00</div>
-  <div class="row tbtns">
-   <button id="bStart" class="btn go">START</button>
-   <button id="bLap" class="btn lap" disabled>INTERTEMPO</button>
-   <button id="bStop" class="btn" disabled>STOP</button>
+  <div id="results"></div>
+  <p class="lbl">Impostazioni</p>
+  <div class="row">
+   <select id="quality" aria-label="Qualità video">
+    <option value="720">720p 30</option>
+    <option value="1080">1080p 30</option>
+    <option value="1080-60">1080p 60</option>
+   </select>
+   <button id="btnFlip" class="btn ghost sm">Cambia camera</button>
+   <button id="btnFs" class="btn ghost sm">Schermo intero</button>
   </div>
-  <div id="live" class="live"></div>
- </section>
-
- <section class="sec" id="results"></section>
+ </div>
 </div>
+
+<div id="rot">Ruota il telefono in orizzontale</div>
 <div id="toast" role="status"></div>
 
 <script>
@@ -143,31 +200,51 @@ try{const d=JSON.parse(localStorage.getItem(LS));if(d&&Array.isArray(d.athletes)
 const save=()=>{try{localStorage.setItem(LS,JSON.stringify(data))}catch{}};
 const cur=()=>data.athletes.find(a=>a.id===data.current)||null;
 
+/* ---------- penalità ---------- */
+/* ogni penalità è {s:tratto, k:2|50}; s=-1 = aggiunta dopo l'arrivo (conta solo nel totale) */
+function totals(r){
+ const pe=Array.isArray(r.pe)?r.pe:[];let n2=0,n50=0;
+ pe.forEach(e=>{if(Number(e.k)===50)n50++;else n2++});
+ return{pe,n2,n50,tot:n2*2+n50*50};
+}
+const penTxt=(pe,s)=>pe.filter(e=>Number(e.s)===s).map(e=>'<span class="p'+(Number(e.k)===50?50:2)+'">+'+(Number(e.k)===50?50:2)+'</span>').join(' ');
+
 /* ---------- tabella di una prova ---------- */
-function runHTML(r,i,withDel){
+function runHTML(r,i,withEdit){
+ const T=totals(r),l=Array.isArray(r.l)?r.l:[];
  const rows=[];let prev=0;
- (r.l||[]).forEach((l,k)=>{rows.push(['Int. '+(k+1),Number(l.c)-prev,Number(l.c),l.v]);prev=Number(l.c)});
- rows.push(['Arrivo',Number(r.t)-prev,Number(r.t),r.tv]);
- const hasV=rows.some(x=>x[3]!=null);
+ l.forEach((x,k)=>{const c=Number(x.c)||0;rows.push({n:'Int. '+(k+1),p:c-prev,c,v:x.v,s:k});prev=c});
+ const t=Number(r.t)||0;
+ rows.push({n:'Arrivo',p:t-prev,c:t,v:r.tv,s:l.length,fin:1});
+ const hasV=rows.some(x=>x.v!=null);
  let when='';try{when=new Date(r.d).toLocaleString('it-IT',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}catch{}
- const body=rows.map((x,k)=>`<tr${k===rows.length-1?' class="fin"':''}><td>${x[0]}</td><td>${fmt(x[1])}</td><td>${fmt(x[2])}</td>${hasV?`<td>${x[3]!=null?fmt(x[3]):'–'}</td>`:''}</tr>`).join('');
- return `<div class="run"><div class="top"><div><b>Prova ${i+1}</b> <span class="mut">${esc(when)}</span></div><div class="tot">${fmt(r.t)}</div></div>
- <table><thead><tr><th>Punto</th><th>Parziale</th><th>Totale</th>${hasV?'<th>Nel video</th>':''}</tr></thead><tbody>${body}</tbody></table>
+ const body=rows.map(x=>`<tr${x.fin?' class="fin"':''}><td>${x.n}</td><td>${fmt(x.p)}</td><td>${fmt(x.c)}</td><td>${penTxt(T.pe,x.s)||'<span class="mut">–</span>'}</td>${hasV?`<td>${x.v!=null?fmt(x.v):'–'}</td>`:''}</tr>`).join('');
+ const final=t+T.tot*1000;
+ const ex=T.pe.filter(e=>Number(e.s)===-1);
+ const parts=[];
+ if(T.n2)parts.push(T.n2===1?'1 tocco':T.n2+' tocchi');
+ if(T.n50)parts.push(T.n50===1?'1 salto':T.n50+' salti');
+ return `<div class="run"><div class="top"><div><b>Prova ${i+1}</b> <span class="mut">${esc(when)}</span></div><div class="tot">${fmt(final)}</div></div>
+ ${T.tot?`<div class="mut sub">tempo ${fmt(t)} + penalità ${T.tot} s</div>`:''}
+ <table><thead><tr><th>Punto</th><th>Parziale</th><th>Totale</th><th>Pen.</th>${hasV?'<th>Nel video</th>':''}</tr></thead><tbody>${body}</tbody></table>
+ ${ex.length?`<div class="mut" style="margin-top:6px">Dopo l'arrivo: ${penTxt(T.pe,-1)}</div>`:''}
+ <div class="pt">${T.tot?`Penalità totali: +${T.tot} s <span class="mut">· ${parts.join(' · ')}</span>`:'<span class="mut">Nessuna penalità</span>'}</div>
  ${r.sv!=null?`<div class="mut" style="margin-top:6px">Start al ${fmt(r.sv)} del video</div>`:''}
  ${r.vf?`<div class="mut">Video: ${esc(r.vf)}</div>`:''}
- ${withDel?`<div class="row"><button class="btn ghost sm" data-act="delrun" data-id="${esc(r.id)}">Elimina prova</button></div>`:''}</div>`;
+ ${withEdit?`<div class="row"><button class="btn ghost sm" data-act="px2" data-id="${esc(r.id)}">+2 dopo arrivo</button><button class="btn ghost sm" data-act="px50" data-id="${esc(r.id)}">+50 dopo arrivo</button><button class="btn ghost sm" data-act="pxundo" data-id="${esc(r.id)}">− Annulla</button><button class="btn ghost sm" data-act="delrun" data-id="${esc(r.id)}" style="margin-left:auto">Elimina prova</button></div>`:''}</div>`;
 }
 
 /* ---------- vista atleta (link condiviso) ---------- */
 function viewer(p){
  document.title='Tempi '+p.n;
  const link=/^https?:\/\//i.test(p.u||'')?`<a class="btn go" href="${esc(p.u)}" target="_blank" rel="noopener">Scarica il video</a>`:'';
- $('#app').innerHTML=`<header><h1>Tempi di ${esc(p.n)}</h1></header>${link}${(p.r||[]).map((r,i)=>runHTML(r,i,false)).reverse().join('')||'<p class="mut">Nessuna prova.</p>'}`;
+ $('#viewer').hidden=false;
+ $('#viewer').innerHTML=`<h1 style="margin:4px 0 12px">Tempi di ${esc(p.n)}</h1>${link}${(Array.isArray(p.r)?p.r:[]).map((r,i)=>runHTML(r,i,false)).reverse().join('')||'<p class="mut">Nessuna prova.</p>'}`;
 }
 
 /* ---------- fotocamera e registrazione ---------- */
 const QUAL={'720':{w:1280,h:720,fps:30,br:5e6},'1080':{w:1920,h:1080,fps:30,br:10e6},'1080-60':{w:1920,h:1080,fps:60,br:14e6}};
-let stream=null,facing='environment',rec=null,chunks=[],recording=false,recStart=0,recTimer=null,recRuns=[],lastVideo=null;
+let stream=null,facing='environment',rec=null,chunks=[],recording=false,recStart=0,recTimer=null,recRuns=[],lastVideo=null,zoomVal=null;
 const pickMime=()=>['video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4','video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'].find(m=>window.MediaRecorder&&MediaRecorder.isTypeSupported(m))||'';
 
 async function startCamera(){
@@ -185,8 +262,30 @@ async function startCamera(){
  }
  if(!stream){msg.hidden=false;msg.textContent=err&&err.name==='NotAllowedError'?'Permesso negato: consenti fotocamera e microfono a questo sito dalle impostazioni di Chrome.':'Impossibile avviare la fotocamera.';return}
  $('#preview').srcObject=stream;msg.hidden=true;
+ setupZoom();
 }
 function ensureCam(){if(recording)return;if(!stream||stream.getTracks().some(t=>t.readyState==='ended'))startCamera()}
+
+/* zoom */
+let zBusy=false,zNext=null;
+function setupZoom(){
+ const tr=stream&&stream.getVideoTracks()[0],sl=$('#zoom');
+ let caps={};try{caps=(tr&&tr.getCapabilities&&tr.getCapabilities())||{}}catch{}
+ if(caps.zoom&&caps.zoom.max>caps.zoom.min){
+  sl.min=caps.zoom.min;sl.max=caps.zoom.max;sl.step=caps.zoom.step||0.1;
+  const z=Math.min(Math.max(zoomVal||caps.zoom.min,caps.zoom.min),caps.zoom.max);
+  sl.value=z;sl.disabled=false;applyZoom(z);
+ }else{sl.disabled=true;$('#zoomLbl').textContent='n/d'}
+}
+async function applyZoom(z){
+ $('#zoomLbl').textContent='×'+Number(z).toFixed(1);zoomVal=Number(z);
+ zNext=Number(z);if(zBusy)return;zBusy=true;
+ while(zNext!==null){
+  const v=zNext;zNext=null;const tr=stream&&stream.getVideoTracks()[0];if(!tr)break;
+  try{await tr.applyConstraints({advanced:[{zoom:v}]})}catch{}
+ }
+ zBusy=false;
+}
 
 function startRec(){
  if(!stream){toast('Fotocamera non pronta');return}
@@ -213,6 +312,7 @@ function finishRec(){
  recRuns=[];save();ui();renderResults();
  dl(blob,name);
  $('#savedName').innerHTML='<b>'+esc(name)+'</b>';$('#saved').hidden=false;
+ toast('Video salvato: '+name);
 }
 function dl(blob,name){
  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();
@@ -227,14 +327,14 @@ async function shareVideo(){
 }
 
 /* ---------- cronometro ---------- */
-let running=false,t0=0,raf=0,lapsLive=[],runVid0=null,runAth=null;
+let running=false,t0=0,raf=0,lapsLive=[],livePen=[],runVid0=null,runAth=null,lastRunRef=null;
 function tick(){if(!running)return;$('#clock').textContent=fmt(performance.now()-t0);raf=requestAnimationFrame(tick)}
 function startT(){
  if(running)return;
- if(!cur()){toast('Aggiungi o scegli un atleta');return}
- running=true;runAth=cur().id;lapsLive=[];t0=performance.now();
+ if(!cur()){toast('Scegli o aggiungi un atleta');showTempi(true);return}
+ running=true;runAth=cur().id;lapsLive=[];livePen=[];lastRunRef=null;t0=performance.now();
  runVid0=recording?Math.round(t0-recStart):null;
- renderLive();ui();tick();buzz();
+ renderLive();tick();buzz();
 }
 function lapT(){
  if(!running)return;
@@ -249,52 +349,117 @@ function stopT(){
  const t=Math.round(now-t0);$('#clock').textContent=fmt(t);
  const a=data.athletes.find(x=>x.id===runAth);
  if(a){
-  const run={id:String(Date.now()),d:new Date().toISOString(),t,l:lapsLive,sv:runVid0,tv:recording?Math.round(now-recStart):null,vf:null};
-  a.runs.push(run);
+  const run={id:String(Date.now()),d:new Date().toISOString(),t,l:lapsLive,sv:runVid0,tv:recording?Math.round(now-recStart):null,vf:null,pe:livePen};
+  a.runs.push(run);lastRunRef={a:a.id,id:run.id};
   if(recording)recRuns.push({a:a.id,id:run.id});
   save();
  }
- lapsLive=[];ui();renderLive();renderResults();buzz();
+ lapsLive=[];livePen=[];renderLive();renderResults();buzz();
+}
+
+/* ---------- penalità: comandi ---------- */
+function lastRun(){
+ if(!lastRunRef)return null;
+ const a=data.athletes.find(x=>x.id===lastRunRef.a);if(!a)return null;
+ const i=a.runs.findIndex(x=>x.id===lastRunRef.id);
+ return i<0?null:{a,r:a.runs[i],n:i+1};
+}
+function penTarget(){
+ if(running)return{label:'Pen. → tratto '+(lapsLive.length+1)};
+ const L=lastRun();
+ return L?{label:'Pen. → '+L.a.name+' · prova '+L.n+' (solo totale)'}:null;
+}
+function addPen(k){
+ if(running){livePen.push({s:lapsLive.length,k});renderLive();buzz();return}
+ const L=lastRun();
+ if(!L){toast('Nessuna prova a cui aggiungere');return}
+ (L.r.pe=Array.isArray(L.r.pe)?L.r.pe:[]).push({s:-1,k});
+ save();renderLive();renderResults();buzz();
+}
+function undoPen(){
+ if(running){if(livePen.length){livePen.pop();renderLive();buzz()}else toast('Nessuna penalità da annullare');return}
+ const L=lastRun();if(!L)return;
+ const pe=Array.isArray(L.r.pe)?L.r.pe:[];let i=-1;
+ pe.forEach((e,k)=>{if(Number(e.s)===-1)i=k});
+ if(i<0){toast('Nessuna penalità aggiunta dopo l\'arrivo');return}
+ pe.splice(i,1);save();renderLive();renderResults();buzz();
 }
 
 /* ---------- interfaccia ---------- */
 function ui(){
  $('#bStart').disabled=running;$('#bLap').disabled=!running;$('#bStop').disabled=!running;
+ const b=$('#btnRec');b.textContent=recording?'■ STOP':'● REC';b.classList.toggle('on',recording);
+ $('#recBadge').hidden=!recording;
+ $('#btnFlip').disabled=recording;$('#quality').disabled=recording;
+ $('#athSel').disabled=running;
  $('#chips').style.pointerEvents=running?'none':'';$('#chips').style.opacity=running?.5:1;
- const b=$('#btnRec');b.textContent=recording?'■ STOP REC':'● REC';b.classList.toggle('on',recording);
- $('#btnFlip').disabled=recording;$('#quality').disabled=recording;$('#recBadge').hidden=!recording;
+ const t=penTarget();
+ $('#p2').disabled=!t;$('#p50').disabled=!t;$('#pUndo').disabled=!t;
+ $('#penLbl').textContent=t?t.label:'Penalità';
+}
+function renderLive(){
+ const h=$('#hud');
+ if(running){
+  const n=lapsLive.length,pt=livePen.reduce((s,e)=>s+(Number(e.k)===50?50:2),0);
+  let tx=n?('Int. '+n+' · '+fmt(lapsLive[n-1].c)+' (+'+fmt(lapsLive[n-1].c-(n>1?lapsLive[n-2].c:0))+')'):'In corso';
+  if(pt)tx+=' · pen +'+pt;
+  h.textContent=tx;
+ }else{
+  const L=lastRun();
+  if(L){const T=totals(L.r);h.textContent=L.a.name+' · prova '+L.n+' · '+fmt(Number(L.r.t)+T.tot*1000)+(T.tot?' (pen +'+T.tot+')':'')}
+  else h.textContent='';
+ }
+ ui();
+}
+function renderAth(){
+ const s=$('#athSel');
+ s.innerHTML=(data.athletes.length?'':'<option value="" selected disabled>Nessun atleta</option>')
+  +data.athletes.map(a=>`<option value="${esc(a.id)}">${esc(a.name)}</option>`).join('')
+  +'<option value="__new">+ Nuovo atleta…</option>';
+ s.value=data.current||'';
 }
 function renderChips(){
  $('#chips').innerHTML=data.athletes.length?data.athletes.map(a=>`<button class="chip${a.id===data.current?' on':''}" data-id="${esc(a.id)}">${esc(a.name)}</button>`).join(''):'<span class="mut">Nessun atleta: aggiungine uno.</span>';
-}
-function renderLive(){
- $('#live').innerHTML=lapsLive.map((l,k)=>`<div><span>Int. ${k+1}</span><span>${fmt(l.c)} <span class="mut">(+${fmt(l.c-(k?lapsLive[k-1].c:0))})</span></span></div>`).join('');
 }
 function renderResults(){
  const a=cur(),box=$('#results');
  if(!a){box.innerHTML='';return}
  const runs=a.runs.map((r,i)=>runHTML(r,i,true)).reverse().join('')||'<p class="mut">Nessuna prova ancora.</p>';
- box.innerHTML=`<p class="lbl" style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);margin:0 0 8px">Tempi</p>
- <div class="rh"><h2>${esc(a.name)}</h2><button class="btn ghost sm" data-act="delath">Elimina atleta</button></div>
+ box.innerHTML=`<div class="rh"><h2>${esc(a.name)}</h2><button class="btn ghost sm" data-act="delath">Elimina atleta</button></div>
  <label class="lk">Link del video per l'atleta (opzionale, es. Drive)<input id="vlink" type="url" inputmode="url" placeholder="Incolla qui il link" value="${esc(a.link||'')}"></label>
  <div class="row"><button class="btn ghost" data-act="shareT">Condividi tempi</button><button class="btn ghost" data-act="csv">Esporta CSV</button></div>${runs}`;
 }
+function setCurrent(id){
+ data.current=id;save();renderChips();renderAth();renderResults();renderLive();
+}
+function showTempi(focusNew){
+ $('#tempi').hidden=false;
+ if(focusNew)setTimeout(()=>{try{$('#newA').focus()}catch{}},50);
+}
+function hideTempi(){$('#tempi').hidden=true}
+
 function summary(a){
- return a.name+'\n'+a.runs.map((r,i)=>{let prev=0;const ints=(r.l||[]).map(l=>{const s=fmt(l.c-prev);prev=l.c;return s});return 'Prova '+(i+1)+': '+fmt(r.t)+(ints.length?' (int. '+ints.join(' · ')+')':'')}).join('\n');
+ return a.name+'\n'+a.runs.map((r,i)=>{
+  let prev=0;const T=totals(r);
+  const ints=(r.l||[]).map(l=>{const s=fmt(l.c-prev);prev=l.c;return s});
+  return 'Prova '+(i+1)+': '+fmt(r.t+T.tot*1000)+(T.tot?' (tempo '+fmt(r.t)+' + pen '+T.tot+' s)':'')+(ints.length?' · int. '+ints.join(' · '):'');
+ }).join('\n');
 }
 async function shareTimes(){
  const a=cur();if(!a||!a.runs.length){toast('Nessun tempo da condividere');return}
- const url=location.origin+location.pathname+'#v='+enc({n:a.name,u:a.link||'',r:a.runs});
+ const runs=a.runs.map(r=>({d:r.d,t:r.t,l:(r.l||[]).map(x=>({c:x.c,v:x.v})),sv:r.sv,tv:r.tv,pe:r.pe||[]}));
+ const url=location.origin+location.pathname+'#v='+enc({n:a.name,u:a.link||'',r:runs});
  if(navigator.share){try{await navigator.share({title:'Tempi '+a.name,text:summary(a),url});return}catch(e){if(e.name==='AbortError')return}}
  try{await navigator.clipboard.writeText(url);toast('Link copiato')}catch{toast('Copia non riuscita')}
 }
 function csv(){
- const L=[['Atleta','Prova','Data','Punto','Parziale','Totale','Tempo nel video','File video']];
+ const L=[['Atleta','Prova','Data','Punto','Parziale','Totale','Penalità tratto (s)','Tempo nel video','File video','Penalità totali (s)','Tempo finale']];
  data.athletes.forEach(a=>a.runs.forEach((r,i)=>{
-  let prev=0;const d=new Date(r.d).toLocaleString('it-IT');
-  (r.l||[]).forEach((l,k)=>{L.push([a.name,i+1,d,'Intertempo '+(k+1),fmt(l.c-prev),fmt(l.c),l.v!=null?fmt(l.v):'',r.vf||''])});
-  const lastC=(r.l&&r.l.length)?r.l[r.l.length-1].c:0;
-  L.push([a.name,i+1,d,'Arrivo',fmt(r.t-lastC),fmt(r.t),r.tv!=null?fmt(r.tv):'',r.vf||'']);
+  const T=totals(r),d=new Date(r.d).toLocaleString('it-IT'),l=r.l||[];let prev=0;
+  const ps=s=>T.pe.filter(e=>Number(e.s)===s).reduce((x,e)=>x+(Number(e.k)===50?50:2),0);
+  l.forEach((x,k)=>{L.push([a.name,i+1,d,'Intertempo '+(k+1),fmt(x.c-prev),fmt(x.c),ps(k),x.v!=null?fmt(x.v):'',r.vf||'','','']);prev=x.c});
+  L.push([a.name,i+1,d,'Arrivo',fmt(r.t-prev),fmt(r.t),ps(l.length),r.tv!=null?fmt(r.tv):'',r.vf||'',T.tot,fmt(r.t+T.tot*1000)]);
+  if(T.pe.some(e=>Number(e.s)===-1))L.push([a.name,i+1,d,"Dopo l'arrivo",'','',ps(-1),'','','','']);
  }));
  const s='﻿'+L.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(';')).join('\r\n');
  dl(new Blob([s],{type:'text/csv;charset=utf-8'}),'tempi_'+stamp()+'.csv');
@@ -308,34 +473,61 @@ function arm(b,fn){
 /* ---------- eventi ---------- */
 function bind(){
  $('#btnRec').onclick=()=>recording?stopRec():startRec();
- $('#btnFlip').onclick=()=>{facing=facing==='environment'?'user':'environment';startCamera()};
+ $('#btnFlip').onclick=()=>{facing=facing==='environment'?'user':'environment';zoomVal=null;startCamera()};
+ $('#btnFs').onclick=async()=>{
+  try{await document.documentElement.requestFullscreen();if(screen.orientation&&screen.orientation.lock)await screen.orientation.lock('landscape')}catch{toast('Non disponibile qui')}
+ };
  $('#quality').onchange=e=>{data.quality=e.target.value;save();startCamera()};
+ $('#zoom').oninput=e=>applyZoom(e.target.value);
  $('#bStart').onclick=startT;$('#bLap').onclick=lapT;$('#bStop').onclick=stopT;
+ $('#p2').onclick=()=>addPen(2);$('#p50').onclick=()=>addPen(50);$('#pUndo').onclick=undoPen;
+ $('#bTempi').onclick=()=>showTempi(false);$('#bBack').onclick=hideTempi;
  $('#btnShareV').onclick=shareVideo;
  $('#btnAgain').onclick=()=>lastVideo&&dl(lastVideo.blob,lastVideo.name);
+ $('#athSel').onchange=e=>{
+  if(e.target.value==='__new'){renderAth();showTempi(true);return}
+  if(e.target.value)setCurrent(e.target.value);
+ };
  $('#addF').onsubmit=e=>{
   e.preventDefault();const n=$('#newA').value.trim();if(!n)return;
-  const a={id:'a'+Date.now(),name:n,link:'',runs:[]};data.athletes.push(a);data.current=a.id;
-  $('#newA').value='';save();renderChips();renderResults();
+  const a={id:'a'+Date.now(),name:n,link:'',runs:[]};data.athletes.push(a);
+  $('#newA').value='';setCurrent(a.id);
  };
- $('#chips').onclick=e=>{const b=e.target.closest('.chip');if(!b)return;data.current=b.dataset.id;save();renderChips();renderResults()};
+ $('#chips').onclick=e=>{const b=e.target.closest('.chip');if(!b)return;setCurrent(b.dataset.id)};
  $('#results').addEventListener('input',e=>{if(e.target.id==='vlink'){const a=cur();if(a){a.link=e.target.value.trim();save()}}});
  $('#results').onclick=e=>{
   const b=e.target.closest('[data-act]');if(!b)return;const act=b.dataset.act,a=cur();
+  const run=a&&a.runs.find(x=>x.id===b.dataset.id);
   if(act==='shareT')shareTimes();
   else if(act==='csv')csv();
-  else if(act==='delrun')arm(b,()=>{a.runs=a.runs.filter(r=>r.id!==b.dataset.id);save();renderResults()});
-  else if(act==='delath')arm(b,()=>{data.athletes=data.athletes.filter(x=>x.id!==a.id);data.current=data.athletes.length?data.athletes[0].id:null;save();renderChips();renderResults()});
+  else if(act==='px2'||act==='px50'){if(run){(run.pe=Array.isArray(run.pe)?run.pe:[]).push({s:-1,k:act==='px2'?2:50});save();renderResults();renderLive()}}
+  else if(act==='pxundo'){
+   if(run){
+    const pe=Array.isArray(run.pe)?run.pe:[];let i=-1;pe.forEach((x,k)=>{if(Number(x.s)===-1)i=k});
+    if(i>=0){pe.splice(i,1);save();renderResults();renderLive()}else toast("Nessuna penalità aggiunta dopo l'arrivo");
+   }
+  }
+  else if(act==='delrun')arm(b,()=>{a.runs=a.runs.filter(r=>r.id!==b.dataset.id);if(lastRunRef&&lastRunRef.id===b.dataset.id)lastRunRef=null;save();renderResults();renderLive()});
+  else if(act==='delath')arm(b,()=>{
+   data.athletes=data.athletes.filter(x=>x.id!==a.id);
+   if(lastRunRef&&lastRunRef.a===a.id)lastRunRef=null;
+   data.current=data.athletes.length?data.athletes[0].id:null;
+   save();renderChips();renderAth();renderResults();renderLive();
+  });
  };
 }
 let wake=null;
 async function wl(){try{if(navigator.wakeLock)wake=await navigator.wakeLock.request('screen')}catch{}}
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){wl();ensureCam()}});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&document.body.classList.contains('app')){wl();ensureCam()}});
 
 function init(){
+ document.body.classList.add('app');
+ $('#cam').hidden=false;
  if(!data.current&&data.athletes.length)data.current=data.athletes[0].id;
  $('#quality').value=data.quality;
- bind();renderChips();renderResults();renderLive();ui();startCamera();wl();
+ bind();renderChips();renderAth();renderResults();renderLive();
+ startCamera();wl();
+ try{if(screen.orientation&&screen.orientation.lock)screen.orientation.lock('landscape').catch(()=>{})}catch{}
  if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
 
