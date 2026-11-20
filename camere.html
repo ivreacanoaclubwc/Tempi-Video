@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0d0f12">
+<title>Prova camere</title>
+<style>
+:root{--bg:#0d0f12;--panel:#161a20;--line:#262c35;--fg:#eef1f4;--mut:#8b95a1;--go:#28c76f;--acc:#4da3ff;color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;background:var(--bg);color:var(--fg)}
+body{font:15px/1.45 system-ui,Roboto,sans-serif;padding:max(12px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) max(28px,env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left));max-width:640px;margin:0 auto}
+h1{font-size:19px;margin:0 0 6px}
+p{margin:6px 0}
+.mut{color:var(--mut);font-size:13px}
+.btn{min-height:48px;border:0;border-radius:12px;font:700 15px system-ui,Roboto,sans-serif;color:#0d0f12;background:var(--go);padding:0 16px;touch-action:manipulation}
+.btn.g{background:var(--panel);color:var(--fg);border:1px solid var(--line);font-weight:600}
+.btn.s{min-height:38px;font-size:13px;padding:0 12px}
+.btn:disabled{opacity:.4}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:12px}
+.card b{font-size:16px}
+.k{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;margin-top:8px;font-size:13px}
+.k span:nth-child(odd){color:var(--mut)}
+video{width:100%;max-height:34vh;background:#000;border-radius:10px;margin-top:10px;display:block}
+textarea{width:100%;height:210px;background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:12px;padding:10px;font:12px/1.4 ui-monospace,Menlo,monospace;margin-top:10px}
+input[type=range]{width:100%;margin-top:8px}
+#toast{position:fixed;left:50%;bottom:max(20px,env(safe-area-inset-bottom));transform:translateX(-50%);background:#fff;color:#0d0f12;padding:9px 16px;border-radius:99px;font-weight:600;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s}
+#toast.on{opacity:1}
+</style>
+</head>
+<body>
+<h1>Prova camere</h1>
+<p class="mut">Mostra quali fotocamere vede Chrome su questo telefono e quanto zoom permette ognuna. Non registra niente.</p>
+<div class="row">
+ <button id="bGo" class="btn">1. Cerca le camere</button>
+ <button id="bAll" class="btn g" disabled>2. Prova tutte</button>
+</div>
+<div id="info" class="mut" style="margin-top:8px"></div>
+<div id="list"></div>
+<div class="card" id="sumCard" hidden>
+ <b>Riepilogo</b>
+ <p class="mut">Tocca «Copia» e incollalo nella chat, oppure fai uno screenshot di questa parte.</p>
+ <textarea id="sum" readonly></textarea>
+ <div class="row"><button id="bCopy" class="btn s">Copia riepilogo</button></div>
+</div>
+<div id="toast" role="status"></div>
+<script>
+'use strict';
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let devs=[],res={},cur=null;
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),2200)}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function stopCur(){if(cur){cur.getTracks().forEach(t=>t.stop());cur=null}document.querySelectorAll('video').forEach(v=>{v.srcObject=null})}
+
+async function open(d){
+ stopCur();
+ const base={width:{ideal:1920},height:{ideal:1080},frameRate:{ideal:30}};
+ if(d.id==='__env'){
+  try{cur=await navigator.mediaDevices.getUserMedia({video:Object.assign({facingMode:{exact:'environment'}},base),audio:false})}
+  catch{cur=await navigator.mediaDevices.getUserMedia({video:Object.assign({facingMode:{ideal:'environment'}},base),audio:false})}
+  return cur;
+ }
+ cur=await navigator.mediaDevices.getUserMedia({video:Object.assign({deviceId:{exact:d.deviceId}},base),audio:false});
+ return cur;
+}
+function describe(stream){
+ const t=stream.getVideoTracks()[0];let s={},c={};
+ try{s=t.getSettings()}catch{} try{c=t.getCapabilities?t.getCapabilities():{}}catch{}
+ return{label:t.label,w:s.width,h:s.height,fps:s.frameRate,facing:s.facingMode||'?',zoomNow:s.zoom,
+  zoom:c.zoom?{min:c.zoom.min,max:c.zoom.max,step:c.zoom.step}:null,
+  focus:c.focusMode?c.focusMode.join('/'):'-',torch:!!c.torch};
+}
+async function probe(d){
+ try{const st=await open(d);const x=describe(st);stopCur();res[d.id]=x;return x}
+ catch(e){stopCur();res[d.id]={err:e.name+': '+(e.message||'')};return res[d.id]}
+}
+function kv(a){return '<div class="k">'+a.map(([k,v])=>'<span>'+esc(k)+'</span><span>'+esc(v)+'</span>').join('')+'</div>'}
+function cardInfo(d){
+ const r=res[d.id];if(!r)return '<p class="mut">Non ancora provata.</p>';
+ if(r.err)return '<p style="color:#ff6b61">Errore: '+esc(r.err)+'</p>';
+ return kv([['Risoluzione',r.w+'×'+r.h+' a '+Math.round(r.fps||0)+' fps'],['Direzione',r.facing],['Zoom',r.zoom?(r.zoom.min+' – '+r.zoom.max+' (passo '+r.zoom.step+')'):'non disponibile'],['Zoom attuale',r.zoomNow!=null?String(r.zoomNow):'-'],['Messa a fuoco',r.focus],['Torcia',r.torch?'sì':'no']]);
+}
+function render(){
+ $('#list').innerHTML=devs.map((d,i)=>`<div class="card" data-i="${i}"><b>${esc(d.title)}</b><div class="mut">${esc(d.label||'(senza nome)')}${d.deviceId?' · id '+esc(d.deviceId.slice(0,8)):''}</div>${cardInfo(d)}<div class="live"></div><div class="row"><button class="btn s" data-a="view">Guarda anteprima</button></div></div>`).join('');
+ summary();
+}
+function summary(){
+ const L=['UA: '+navigator.userAgent,'Zoom supportato dal browser: '+(navigator.mediaDevices.getSupportedConstraints().zoom?'sì':'no'),'Camere video viste: '+devs.filter(d=>d.id!=='__env').length,''];
+ devs.forEach(d=>{const r=res[d.id];let t=d.title+' | '+(d.label||'-');
+  if(r&&r.err)t+=' | ERRORE '+r.err;
+  else if(r)t+=' | '+r.w+'x'+r.h+'@'+Math.round(r.fps||0)+' | dir '+r.facing+' | zoom '+(r.zoom?r.zoom.min+'-'+r.zoom.max:'no');
+  else t+=' | non provata';
+  L.push(t)});
+ $('#sum').value=L.join('\n');$('#sumCard').hidden=!devs.length;
+}
+$('#bGo').onclick=async()=>{
+ $('#info').textContent='Chiedo il permesso…';
+ try{const s=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});s.getTracks().forEach(t=>t.stop())}
+ catch(e){$('#info').textContent='Permesso negato o camera non disponibile ('+e.name+'). Consenti la fotocamera a questo sito e riprova.';return}
+ const all=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput');
+ devs=[{id:'__env',title:'Posteriore (quella normale del browser)',label:'facingMode: environment'}].concat(all.map((d,i)=>({id:d.deviceId,deviceId:d.deviceId,title:'Camera '+(i+1)+' di '+all.length,label:d.label})));
+ res={};render();
+ $('#info').textContent='Trovate '+all.length+' camere video. Ora tocca «2. Prova tutte».';
+ $('#bAll').disabled=false;
+};
+$('#bAll').onclick=async()=>{
+ $('#bAll').disabled=true;
+ for(let i=0;i<devs.length;i++){$('#info').textContent='Provo '+(i+1)+' di '+devs.length+'…';await probe(devs[i]);render();await sleep(500)}
+ $('#info').textContent='Fatto. Qui sotto c\'è il riepilogo; con «Guarda anteprima» vedi cosa inquadra ogni camera.';
+ $('#bAll').disabled=false;
+};
+$('#list').onclick=async e=>{
+ const b=e.target.closest('[data-a=view]');if(!b)return;
+ const card=b.closest('.card'),d=devs[Number(card.dataset.i)];
+ document.querySelectorAll('.live').forEach(x=>x.innerHTML='');
+ try{
+  const st=await open(d);res[d.id]=describe(st);
+  const live=card.querySelector('.live');
+  live.innerHTML='<video autoplay muted playsinline></video>';
+  const v=live.querySelector('video');v.srcObject=st;
+  const z=res[d.id].zoom;
+  if(z){
+   live.insertAdjacentHTML('beforeend',`<input type="range" min="${z.min}" max="${z.max}" step="${z.step||0.1}" value="${z.min}"><div class="mut" id="zl">Zoom ×${z.min} (trascina per provare)</div>`);
+   live.querySelector('input').oninput=async ev=>{const t=st.getVideoTracks()[0];try{await t.applyConstraints({advanced:[{zoom:Number(ev.target.value)}]});$('#zl').textContent='Zoom ×'+Number(ev.target.value).toFixed(1)}catch{$('#zl').textContent='Zoom non applicabile'}};
+  }
+  card.querySelector('.k')&&(card.querySelector('.k').outerHTML=cardInfo(d));
+  summary();
+ }catch(err){res[d.id]={err:err.name+': '+(err.message||'')};render()}
+};
+$('#bCopy').onclick=async()=>{
+ try{await navigator.clipboard.writeText($('#sum').value);toast('Copiato')}
+ catch{$('#sum').select();toast('Seleziona e copia a mano')}
+};
+</script>
+</body>
+</html>
