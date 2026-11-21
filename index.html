@@ -21,6 +21,8 @@ h2{font-size:17px;margin:0}
 .mut{color:var(--mut);font-size:13px}
 select,input{background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:9px 10px;font:inherit;min-width:0}
 input{width:100%}
+body.tablet .ph{display:none!important}
+body:not(.tablet) .tb{display:none!important}
 
 /* ---------- schermata ripresa ---------- */
 #cam{position:absolute;inset:0;background:#000}
@@ -47,7 +49,7 @@ select.glass{height:40px;max-width:42vw;background:rgba(20,24,30,.72);color:#fff
 #clock{font:700 34px/1.1 ui-monospace,"Roboto Mono",Menlo,monospace;font-variant-numeric:tabular-nums;background:rgba(0,0,0,.55);color:#fff;padding:2px 14px;border-radius:12px}
 #hud{background:rgba(0,0,0,.55);color:#fff;padding:2px 10px;border-radius:10px;font-size:12px;font-variant-numeric:tabular-nums;max-width:46vw;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #hud:empty{display:none}
-#recBadge{display:flex;gap:6px;align-items:center;background:rgba(0,0,0,.6);color:#fff;padding:6px 10px;border-radius:99px;font-size:13px;font-variant-numeric:tabular-nums}
+#recBadge{display:flex;gap:6px;align-items:center;background:rgba(0,0,0,.6);color:#fff;padding:6px 10px;border-radius:99px;font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap}
 #recBadge i{width:9px;height:9px;border-radius:50%;background:var(--rec);animation:bl 1s infinite}
 @keyframes bl{50%{opacity:.25}}
 @media (prefers-reduced-motion:reduce){#recBadge i{animation:none}}
@@ -60,24 +62,60 @@ select.glass{height:40px;max-width:42vw;background:rgba(20,24,30,.72);color:#fff
 #zoom:disabled{opacity:.35}
 #btnRec{width:64px;height:50px;flex:none;font-size:14px}
 
-#right{position:absolute;right:max(10px,env(safe-area-inset-right));top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px;width:112px}
-#right .ob{height:52px;width:100%;padding:0 4px;font-size:14px}
-
-#pen{position:absolute;left:50%;transform:translateX(-50%);bottom:max(10px,env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;gap:4px}
-#penLbl{background:rgba(0,0,0,.55);color:#fff;border-radius:10px;padding:2px 10px;font-size:12px;max-width:50vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.prow{display:flex;gap:8px}
-.prow .ob{height:46px;min-width:76px}
+#right{position:absolute;right:max(10px,env(safe-area-inset-right));bottom:max(10px,env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:6px;width:112px}
+#right .ob{height:48px;width:100%;padding:0 4px;font-size:14px}
+#mainb{display:flex;flex-direction:column;gap:6px}
+#right .prow .ob{height:46px;font-size:18px}
+#right #pUndo{height:34px;font-size:13px;flex:1 1 100%;order:3}
+#penLbl{background:rgba(0,0,0,.55);color:#fff;border-radius:8px;padding:2px 6px;font-size:11px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:4px}
+.prow{display:flex;gap:6px;flex-wrap:wrap}
+.prow .ob{flex:1 1 40%;min-width:0}
 
 #rot{position:fixed;inset:0;z-index:50;background:var(--bg);display:none;place-items:center;text-align:center;padding:24px;font-size:18px;font-weight:600}
-@media (orientation:portrait){body.app #rot{display:grid}}
+@media (orientation:portrait){body.camera #rot{display:grid}}
 
-/* ---------- schermata tempi ---------- */
+/* ---------- modalità cronometro (senza fotocamera) ---------- */
+body.timer #preview,body.timer #camMsg,body.timer #left,body.timer #recBadge,body.timer #bSend,body.timer .tab[data-tab=video]{display:none!important}
+body:not(.camera) .cm{display:none!important}
+body.timer #cam{display:flex;flex-direction:column;gap:8px;overflow:auto;background:var(--bg);padding:max(8px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left))}
+body.timer #top{position:static;display:grid;grid-template-columns:auto 1fr;grid-template-areas:"l r" "m m";gap:6px;padding:0}
+body.timer #top .l{grid-area:l}
+body.timer #top .m{grid-area:m;align-items:center;gap:4px}
+body.timer #top .r{grid-area:r;justify-self:stretch}
+body.timer select.glass{max-width:none;width:100%;height:40px;background:var(--panel)}
+body.timer #bTempi{background:var(--panel)}
+body.timer #clock{font-size:clamp(30px,13vmin,84px);background:none;padding:0;text-align:center}
+body.timer #hud{max-width:100%;background:rgba(255,255,255,.07)}
+body.timer #right{position:static;width:auto;flex:1;min-height:0;gap:6px}
+body.timer #mainb{flex:1;min-height:0;display:grid;gap:6px;grid-template-columns:repeat(3,1fr);grid-template-rows:1fr}
+body.timer #right #mainb .ob{height:auto;min-height:52px;width:auto;font-size:clamp(9px,3vw,24px);padding:0 2px;box-shadow:none}
+body.timer #penLbl{align-self:center;margin:0}
+body.timer .prow{flex-wrap:nowrap}
+body.timer #right .prow .ob{flex:1;height:clamp(44px,10vh,66px);font-size:clamp(16px,4.5vmin,24px);box-shadow:none}
+body.timer #right #pUndo{flex:1;order:0;height:clamp(44px,10vh,66px);font-size:clamp(10px,3vw,15px);background:var(--panel)}
+@media (min-height:520px) and (max-aspect-ratio:1/1){
+ body.timer #mainb{grid-template-columns:1fr;grid-template-rows:repeat(3,1fr)}
+ body.timer #right #mainb .ob{font-size:clamp(20px,8vw,36px)}
+}
+@media (max-height:340px){body.timer #hud,body.timer #penLbl{display:none}}
+.vr{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px}
+.pl{border:0;background:var(--go);color:#0d0f12;border-radius:6px;font-size:11px;padding:2px 7px;margin-left:6px;touch-action:manipulation}
+#pvSync{position:absolute;left:50%;transform:translateX(-50%);top:max(10px,env(safe-area-inset-top));display:flex;flex-wrap:wrap;justify-content:center;gap:8px;align-items:center;background:rgba(20,24,30,.88);border:1px solid rgba(255,255,255,.25);border-radius:14px;padding:8px 12px;color:#fff;font-size:13px;max-width:90vw}
+#pvSync .hint{flex:1 1 100%;text-align:center;color:#aab3bd;font-size:12px}
+
+/* ---------- schermata Allenamento ---------- */
 #tempi{position:fixed;inset:0;z-index:30;background:var(--bg);overflow:auto;
  padding:0 max(16px,env(safe-area-inset-right)) 40px max(16px,env(safe-area-inset-left))}
-.th{position:sticky;top:0;z-index:2;background:var(--bg);display:flex;align-items:center;gap:12px;padding:max(8px,env(safe-area-inset-top)) 0 8px}
-.tc{max-width:760px;margin:0 auto}
+#thw{position:sticky;top:0;z-index:2;background:var(--bg);padding-top:max(8px,env(safe-area-inset-top))}
+.th{display:flex;align-items:center;gap:10px;padding:0 0 8px}
+.th h1{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px}
+.tab{flex:none;padding:10px 16px;border-radius:99px;background:var(--panel);border:1px solid var(--line);color:var(--fg);font:600 14px system-ui,Roboto,sans-serif;touch-action:manipulation}
+.tab.on{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.ban{background:#3a2d0a;border:1px solid #6b5217;color:#ffd78a;border-radius:10px;padding:6px 10px;margin-bottom:8px;display:flex;gap:8px;align-items:center;justify-content:space-between;font-size:13px}
+.tc{max-width:1100px;margin:0 auto}
 .lbl{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);margin:16px 0 8px}
-.row{display:flex;gap:8px;margin-top:8px}
+.row{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
 .btn{flex:1;min-height:52px;border:0;border-radius:14px;font:700 16px system-ui,Roboto,sans-serif;color:#0d0f12;background:var(--stop);touch-action:manipulation}
 .btn:active{filter:brightness(.85)}
 .btn:disabled{opacity:.3}
@@ -89,7 +127,6 @@ a.btn{display:grid;place-items:center;text-decoration:none;margin-bottom:6px}
 .chips{display:flex;gap:8px;overflow-x:auto;padding:2px 0 6px}
 .chip{flex:none;padding:11px 16px;border-radius:99px;background:var(--panel);border:1px solid var(--line);color:var(--fg);font:600 15px system-ui,Roboto,sans-serif}
 .chip.on{background:var(--acc);color:#0d0f12;border-color:var(--acc)}
-#saved{margin-top:12px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
 .run{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:10px}
 .run .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:4px}
 .run .tot{font:700 22px ui-monospace,"Roboto Mono",monospace;font-variant-numeric:tabular-nums}
@@ -105,7 +142,30 @@ tr.fin td{font-weight:700}
 .rh{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:14px 0 8px}
 .lk{display:block;margin:6px 0 2px;font-size:13px;color:var(--mut)}
 .lk input{margin-top:4px}
-#toast{position:fixed;left:50%;top:max(56px,calc(env(safe-area-inset-top) + 48px));transform:translateX(-50%);background:#fff;color:#0d0f12;padding:9px 16px;border-radius:99px;font-weight:600;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;max-width:80vw;text-align:center;z-index:60}
+
+.tw{overflow-x:auto;margin-top:10px;background:var(--panel);border:1px solid var(--line);border-radius:14px}
+table.st{font-size:14px}
+table.st th,table.st td{padding:7px 9px;text-align:right;white-space:nowrap;border-top:1px solid var(--line)}
+table.st th{border-top:0;text-align:right}
+table.st th.l,table.st td.an{text-align:left}
+table.st td.an{vertical-align:top;min-width:110px}
+table.st tbody.ath>tr:first-child>td{border-top:2px solid #39414d}
+table.st td.best{color:var(--go);font-weight:700}
+table.st td.fn{font-weight:700}
+@media (min-width:900px){table.st{font-size:17px}table.st th{font-size:12px}}
+.vg{margin-top:16px}
+.vg h2{margin-bottom:6px}
+.vcard{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-top:8px}
+.vcard .vt{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.vcard .vt .tot{font:700 18px ui-monospace,"Roboto Mono",monospace;font-variant-numeric:tabular-nums}
+#player{position:fixed;inset:0;z-index:45;background:#000;display:grid;place-items:center}
+#player video{max-width:100%;max-height:100%;background:#000}
+#pvClose{position:absolute;top:max(10px,env(safe-area-inset-top));left:max(10px,env(safe-area-inset-left));min-height:44px;padding:0 16px;border-radius:12px;border:1px solid rgba(255,255,255,.3);background:rgba(20,24,30,.8);color:#fff;font:700 15px system-ui,Roboto,sans-serif}
+#modal{position:fixed;inset:0;z-index:55;background:rgba(0,0,0,.72);display:grid;place-items:center;padding:16px}
+.mbox{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;max-width:460px;width:100%}
+.mbox p{margin:0 0 12px;font-size:16px}
+.mbox .row{margin-top:0}
+#toast{position:fixed;left:50%;bottom:calc(max(10px,env(safe-area-inset-bottom)) + 84px);transform:translateX(-50%);background:#fff;color:#0d0f12;padding:9px 16px;border-radius:99px;font-weight:600;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;max-width:80vw;text-align:center;z-index:60}
 #toast.on{opacity:1}
 #viewer{max-width:560px;margin:0 auto}
 </style>
@@ -121,6 +181,7 @@ tr.fin td{font-weight:700}
   <div class="g l">
    <button id="bTempi" class="ob glass sm">Tempi</button>
    <div id="recBadge" hidden><i></i><span id="recTime">0:00</span></div>
+   <button id="bSend" class="ob go sm" hidden>Invia al tablet</button>
   </div>
   <div class="g m"><div id="clock">0:00.00</div><div id="hud"></div></div>
   <div class="g r"><select id="athSel" class="glass" aria-label="Atleta"></select></div>
@@ -131,51 +192,91 @@ tr.fin td{font-weight:700}
   <button id="btnRec" class="ob rec">● REC</button>
  </div>
  <div id="right">
-  <button id="bStart" class="ob go">START</button>
-  <button id="bLap" class="ob lap" disabled>INTERTEMPO</button>
-  <button id="bStop" class="ob" disabled>STOP</button>
- </div>
- <div id="pen">
+  <div id="mainb">
+   <button id="bStart" class="ob go">START</button>
+   <button id="bLap" class="ob lap" disabled>INTERTEMPO</button>
+   <button id="bStop" class="ob" disabled>STOP</button>
+  </div>
   <div id="penLbl">Penalità</div>
   <div class="prow">
-   <button id="pUndo" class="ob glass">Annulla</button>
    <button id="p2" class="ob lap">+2</button>
    <button id="p50" class="ob r50">+50</button>
+   <button id="pUndo" class="ob glass">Annulla</button>
   </div>
  </div>
 </div>
 
 <div id="tempi" hidden>
- <div class="th"><button id="bBack" class="btn ghost sm">← Ripresa</button><h1>Tempi</h1></div>
+ <div id="thw">
+  <div class="th">
+   <button id="bBack" class="btn ghost sm ph">← Ripresa</button>
+   <h1 id="tTitle">Allenamento</h1>
+   <button id="bImport" class="btn go sm tb">Importa</button>
+  </div>
+  <div class="tabs" id="tabs">
+   <button class="tab on" data-tab="tempi">Tempi</button>
+   <button class="tab" data-tab="video">Video</button>
+   <button class="tab ph" data-tab="atleti">Atleti</button>
+   <button class="tab" data-tab="sess">Allenamenti</button>
+   <button class="tab" data-tab="imp">Impostazioni</button>
+  </div>
+  <div id="vbanner" class="ban" hidden></div>
+ </div>
  <div class="tc">
-  <div id="saved" hidden>
-   <div id="savedName"></div>
-   <div class="mut">Scaricato in automatico nella cartella Download.</div>
-   <div class="row">
-    <button id="btnShareV" class="btn go">Condividi video</button>
-    <button id="btnAgain" class="btn ghost">Scarica ancora</button>
+  <section id="pTempi" data-pane>
+   <div class="row" style="margin-top:0">
+    <button id="bSendT" class="btn ghost ph">Invia tempi al tablet</button>
+    <button id="bCsv" class="btn ghost">Esporta CSV</button>
    </div>
-  </div>
-  <p class="lbl">Atleta</p>
-  <div id="chips" class="chips"></div>
-  <form id="addF" class="row">
-   <input id="newA" placeholder="Nome atleta" autocomplete="off" enterkeyhint="done">
-   <button class="btn go" style="flex:none;padding:0 18px">Aggiungi</button>
-  </form>
-  <div id="results"></div>
-  <p class="lbl">Impostazioni</p>
-  <div class="row">
-   <select id="quality" aria-label="Qualità video">
-    <option value="720">720p 30</option>
-    <option value="1080">1080p 30</option>
-    <option value="1080-60">1080p 60</option>
-   </select>
-   <button id="btnFlip" class="btn ghost sm">Cambia camera</button>
-   <button id="btnFs" class="btn ghost sm">Schermo intero</button>
-  </div>
+   <div id="sessTable"></div>
+  </section>
+  <section id="pVideo" data-pane hidden><div id="vidList"></div></section>
+  <section id="pAtleti" data-pane hidden>
+   <p class="lbl" style="margin-top:4px">Atleta</p>
+   <div id="chips" class="chips"></div>
+   <form id="addF" class="row">
+    <input id="newA" placeholder="Nome atleta" autocomplete="off" enterkeyhint="done" style="flex:1">
+    <button class="btn go" style="flex:none;padding:0 18px">Aggiungi</button>
+   </form>
+   <div id="results"></div>
+  </section>
+  <section id="pSess" data-pane hidden><div id="sessBox"></div></section>
+  <section id="pImp" data-pane hidden>
+   <p class="lbl" style="margin-top:4px">Questo dispositivo</p>
+   <div class="row" style="margin-top:0">
+    <select id="devMode" aria-label="Uso del dispositivo">
+     <option value="timer">Telefono: cronometro (video con la fotocamera Samsung)</option>
+     <option value="camera">Telefono: ripresa con la fotocamera dell'app</option>
+     <option value="tablet">Tablet (archivio: tempi e video)</option>
+    </select>
+   </div>
+   <div class="ph cm">
+    <p class="lbl">Ripresa</p>
+    <div class="row" style="margin-top:0">
+     <select id="quality" aria-label="Qualità video">
+      <option value="720">720p 30</option>
+      <option value="1080">1080p 30</option>
+      <option value="1080-60">1080p 60</option>
+     </select>
+     <button id="btnFlip" class="btn ghost sm">Cambia camera</button>
+     <button id="btnFs" class="btn ghost sm">Schermo intero</button>
+    </div>
+    <div class="row">
+     <select id="autoStop" aria-label="Stop automatico del video">
+      <option value="0">Stop video: solo manuale</option>
+      <option value="3">Stop video 3 s dopo lo STOP del tempo</option>
+      <option value="5">Stop video 5 s dopo lo STOP del tempo</option>
+      <option value="10">Stop video 10 s dopo lo STOP del tempo</option>
+     </select>
+    </div>
+   </div>
+  </section>
  </div>
 </div>
 
+<div id="player" hidden><video id="pv" controls playsinline></video><button id="pvClose">✕ Chiudi</button><div id="pvSync" hidden><button id="pvM" class="btn ghost sm">− 0,5 s</button><span id="pvOff">Correzione 0,0 s</span><button id="pvP" class="btn ghost sm">+ 0,5 s</button><div class="hint">Se la discesa non è ancora partita premi +, se è già in corso premi −</div></div></div>
+<div id="modal" hidden><div class="mbox"><p id="mMsg"></p><div id="mBtns" class="row"></div></div></div>
+<input id="impF" type="file" multiple accept="video/*,.txt,text/plain" hidden>
 <div id="rot">Ruota il telefono in orizzontale</div>
 <div id="toast" role="status"></div>
 
@@ -190,15 +291,69 @@ const slug=s=>String(s).normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-zA-
 const enc=o=>{const b=new TextEncoder().encode(JSON.stringify(o));let s='';b.forEach(x=>s+=String.fromCharCode(x));return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')};
 const dec=s=>{s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';const bin=atob(s);return JSON.parse(new TextDecoder().decode(Uint8Array.from(bin,c=>c.charCodeAt(0))))};
 const buzz=()=>{try{navigator.vibrate&&navigator.vibrate(30)}catch{}};
+const isTablet=()=>document.body.classList.contains('tablet');
+const whenLong=d=>{try{return new Date(d).toLocaleString('it-IT',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}catch{return ''}};
+const dayLabel=d=>{try{return new Date(d).toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit'})}catch{return ''}};
+const normName=n=>String(n).replace(/ \(\d+\)(\.[A-Za-z0-9]+)$/,'$1');
 let toastT;
-function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),2600)}
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),2800)}
+function ask(msg,btns){
+ return new Promise(res=>{
+  $('#mMsg').textContent=msg;const box=$('#mBtns');box.innerHTML='';
+  btns.forEach(b=>{const e=document.createElement('button');e.className='btn '+(b.cls||'ghost');e.textContent=b.t;e.onclick=()=>{$('#modal').hidden=true;res(b.v)};box.appendChild(e)});
+  $('#modal').hidden=false;
+ });
+}
 
 /* ---------- dati ---------- */
 const LS='tempi_video_v1';
-let data={athletes:[],current:null,quality:'1080'};
-try{const d=JSON.parse(localStorage.getItem(LS));if(d&&Array.isArray(d.athletes))data=d}catch{}
+let data={athletes:[],current:null,quality:'1080',sessions:[],videos:[],mode:'phone'};
+try{const d=JSON.parse(localStorage.getItem(LS));if(d&&Array.isArray(d.athletes))data=Object.assign(data,d)}catch{}
+if(!Array.isArray(data.sessions))data.sessions=[];
+if(data.mode!=='tablet'&&data.mode!=='camera')data.mode='timer';
+if(!Array.isArray(data.videos))data.videos=[];
+data.athletes.forEach(a=>{if(!Array.isArray(a.runs))a.runs=[]});
 const save=()=>{try{localStorage.setItem(LS,JSON.stringify(data))}catch{}};
 const cur=()=>data.athletes.find(a=>a.id===data.current)||null;
+
+/* prove registrate prima delle sessioni: un allenamento per ogni giorno */
+(function migrate(){
+ const orphans=[];data.athletes.forEach(a=>a.runs.forEach(r=>{if(!r.sid)orphans.push(r)}));
+ if(!orphans.length)return;
+ const byDay={};
+ orphans.forEach(r=>{const k=String(r.d||'').slice(0,10)||'senza-data';(byDay[k]=byDay[k]||[]).push(r)});
+ Object.keys(byDay).sort().forEach(k=>{
+  const rs=byDay[k].slice().sort((a,b)=>String(a.d).localeCompare(String(b.d)));
+  const s={id:'s_'+k,name:'Allenamento '+(rs[0].d?dayLabel(rs[0].d):''),start:rs[0].d||new Date().toISOString(),end:rs[rs.length-1].d||rs[0].d||new Date().toISOString()};
+  data.sessions.push(s);rs.forEach(r=>{r.sid=s.id});
+ });
+ save();
+})();
+
+/* ---------- sessioni ---------- */
+const sessById=id=>data.sessions.find(s=>s.id===id)||null;
+const openSess=()=>data.sessions.find(s=>!s.end)||null;
+const latestSess=()=>data.sessions.slice().sort((a,b)=>String(b.start).localeCompare(String(a.start)))[0]||null;
+let viewSid=null;
+function defView(){const o=isTablet()?null:openSess();const l=latestSess();return o?o.id:(l?l.id:null)}
+function newSession(){
+ const s={id:'s'+Date.now(),name:'Allenamento '+dayLabel(new Date()),start:new Date().toISOString(),end:null};
+ data.sessions.push(s);viewSid=s.id;save();return s;
+}
+function ensureSession(){
+ let s=openSess();
+ if(!s){s=newSession();toast('Nuovo allenamento: '+s.name)}
+ viewSid=s.id;return s;
+}
+function closeSession(s){if(s&&!s.end){s.end=new Date().toISOString();save()}}
+const runsOf=(a,sid)=>a.runs.filter(r=>r.sid===sid);
+const runNo=(a,r)=>runsOf(a,r.sid).indexOf(r)+1;
+const countRuns=sid=>data.athletes.reduce((n,a)=>n+runsOf(a,sid).length,0);
+function lastActivity(s){
+ let m=String(s.start);
+ data.athletes.forEach(a=>runsOf(a,s.id).forEach(r=>{if(String(r.d)>m)m=String(r.d)}));
+ return m;
+}
 
 /* ---------- penalità ---------- */
 /* ogni penalità è {s:tratto, k:2|50}; s=-1 = aggiunta dopo l'arrivo (conta solo nel totale) */
@@ -217,14 +372,13 @@ function runHTML(r,i,withEdit){
  const t=Number(r.t)||0;
  rows.push({n:'Arrivo',p:t-prev,c:t,v:r.tv,s:l.length,fin:1});
  const hasV=rows.some(x=>x.v!=null);
- let when='';try{when=new Date(r.d).toLocaleString('it-IT',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}catch{}
  const body=rows.map(x=>`<tr${x.fin?' class="fin"':''}><td>${x.n}</td><td>${fmt(x.p)}</td><td>${fmt(x.c)}</td><td>${penTxt(T.pe,x.s)||'<span class="mut">–</span>'}</td>${hasV?`<td>${x.v!=null?fmt(x.v):'–'}</td>`:''}</tr>`).join('');
  const final=t+T.tot*1000;
  const ex=T.pe.filter(e=>Number(e.s)===-1);
  const parts=[];
  if(T.n2)parts.push(T.n2===1?'1 tocco':T.n2+' tocchi');
  if(T.n50)parts.push(T.n50===1?'1 salto':T.n50+' salti');
- return `<div class="run"><div class="top"><div><b>Prova ${i+1}</b> <span class="mut">${esc(when)}</span></div><div class="tot">${fmt(final)}</div></div>
+ return `<div class="run"><div class="top"><div><b>Prova ${i+1}</b> <span class="mut">${esc(whenLong(r.d))}</span></div><div class="tot">${fmt(final)}</div></div>
  ${T.tot?`<div class="mut sub">tempo ${fmt(t)} + penalità ${T.tot} s</div>`:''}
  <table><thead><tr><th>Punto</th><th>Parziale</th><th>Totale</th><th>Pen.</th>${hasV?'<th>Nel video</th>':''}</tr></thead><tbody>${body}</tbody></table>
  ${ex.length?`<div class="mut" style="margin-top:6px">Dopo l'arrivo: ${penTxt(T.pe,-1)}</div>`:''}
@@ -242,9 +396,169 @@ function viewer(p){
  $('#viewer').innerHTML=`<h1 style="margin:4px 0 12px">Tempi di ${esc(p.n)}</h1>${link}${(Array.isArray(p.r)?p.r:[]).map((r,i)=>runHTML(r,i,false)).reverse().join('')||'<p class="mut">Nessuna prova.</p>'}`;
 }
 
+/* ---------- video salvati nell'app (IndexedDB) ---------- */
+let _db=null;
+function idb(){
+ return _db?Promise.resolve(_db):new Promise((res,rej)=>{
+  const q=indexedDB.open('tempi_video_db',1);
+  q.onupgradeneeded=()=>q.result.createObjectStore('blobs');
+  q.onsuccess=()=>{_db=q.result;res(_db)};q.onerror=()=>rej(q.error);
+ });
+}
+const blobPut=async(k,b)=>{const d=await idb();return new Promise((res,rej)=>{const t=d.transaction('blobs','readwrite');t.objectStore('blobs').put(b,k);t.oncomplete=()=>res();t.onerror=()=>rej(t.error)})};
+const blobGet=async k=>{const d=await idb();return new Promise((res,rej)=>{const q=d.transaction('blobs').objectStore('blobs').get(k);q.onsuccess=()=>res(q.result||null);q.onerror=()=>rej(q.error)})};
+const blobDel=async k=>{const d=await idb();return new Promise(res=>{const t=d.transaction('blobs','readwrite');t.objectStore('blobs').delete(k);t.oncomplete=()=>res();t.onerror=()=>res()})};
+async function addVideo(name,blob,sid,at,extra){
+ try{await blobPut(name,blob)}catch{toast('Video non salvato nell\'app (memoria piena?)');return false}
+ data.videos=data.videos.filter(v=>v.name!==name);
+ data.videos.push(Object.assign({name,sid,at:at||Date.now(),size:blob.size},extra||{}));save();return true;
+}
+/* orario di inizio dal nome file della fotocamera Samsung (es. 20261121_095012.mp4) */
+function startFromName(n){
+ const m=String(n).match(/(\d{4})(\d{2})(\d{2})[_-](\d{2})(\d{2})(\d{2})/);if(!m)return null;
+ const t=new Date(+m[1],+m[2]-1,+m[3],+m[4],+m[5],+m[6]).getTime();return isFinite(t)?t:null;
+}
+function videoDuration(blob){
+ return new Promise(res=>{
+  const v=document.createElement('video');v.preload='metadata';const u=URL.createObjectURL(blob);
+  let done=false;const fin=x=>{if(done)return;done=true;URL.revokeObjectURL(u);res(x)};
+  v.onloadedmetadata=()=>fin(isFinite(v.duration)?Math.round(v.duration*1000):null);
+  v.onerror=()=>fin(null);setTimeout(()=>fin(null),8000);v.src=u;
+ });
+}
+const runEndMs=r=>Date.parse(r.d);
+const runStartMs=r=>Date.parse(r.d)-(Number(r.t)||0);
+/* discese che stanno dentro un video: per nome file (ripresa nell'app) o per orario (video Samsung) */
+function videoRuns(v){
+ const out=[];
+ data.athletes.forEach(a=>a.runs.forEach(r=>{
+  let pos=null;
+  if(r.vf&&normName(r.vf)===v.name)pos=r.sv!=null?Number(r.sv)/1000:0;
+  else if(v.st&&v.dur){
+   const s=runStartMs(r),e=runEndMs(r);
+   if(isFinite(s)&&s>=v.st-3000&&e<=v.st+v.dur+3000)pos=(s-v.st+(v.off||0))/1000;
+  }
+  if(pos!=null)out.push({a,r,pos:Math.max(0,pos)});
+ }));
+ out.sort((x,y)=>String(x.r.d).localeCompare(String(y.r.d)));return out;
+}
+function vidSessions(v){const ss=[];videoRuns(v).forEach(x=>{if(!ss.includes(x.r.sid))ss.push(x.r.sid)});return ss.length?ss:[v.sid]}
+function runVideoMap(){const m=new Map();data.videos.forEach(v=>videoRuns(v).forEach(x=>{if(!m.has(x.r))m.set(x.r,{v,pos:x.pos})}));return m}
+
+let pvCtx=null;
+const offLabel=v=>'Correzione '+(((v&&v.off)||0)/1000).toFixed(1).replace('.',',')+' s';
+async function playVideo(name,runId){
+ let b=null;try{b=await blobGet(name)}catch{}
+ if(!b){toast('Video non disponibile su questo dispositivo');return}
+ const meta=data.videos.find(x=>x.name===name)||null;
+ let pos=null;pvCtx=null;
+ if(runId&&meta){const x=videoRuns(meta).find(z=>z.r.id===runId);if(x){pos=x.pos;if(!(x.r.vf&&normName(x.r.vf)===name))pvCtx={name,id:runId}}}
+ const u=URL.createObjectURL(b),v=$('#pv');
+ v.onloadedmetadata=()=>{if(pos!=null)try{v.currentTime=Math.max(0,pos-2)}catch{}};
+ v.src=u;$('#player').dataset.u=u;$('#player').hidden=false;
+ $('#pvSync').hidden=!pvCtx;$('#pvOff').textContent=offLabel(meta);
+ v.play().catch(()=>{});
+}
+function adjSync(d){
+ const c=pvCtx;if(!c)return;const meta=data.videos.find(x=>x.name===c.name);if(!meta)return;
+ meta.off=(meta.off||0)+d;save();
+ const x=videoRuns(meta).find(z=>z.r.id===c.id);
+ if(x){try{$('#pv').currentTime=Math.max(0,x.pos-2);$('#pv').play().catch(()=>{})}catch{}}
+ $('#pvOff').textContent=offLabel(meta);
+}
+function closePlayer(){
+ const v=$('#pv'),p=$('#player');v.pause();v.removeAttribute('src');v.load();
+ if(p.dataset.u){URL.revokeObjectURL(p.dataset.u);p.dataset.u=''}
+ p.hidden=true;pvCtx=null;renderAll();
+}
+
+/* ---------- file dei tempi per il tablet ---------- */
+const MARK='--- DATI (non modificare) ---';
+function timesText(s){
+ const L=['TEMPI — '+s.name,'Inizio: '+whenLong(s.start),''];const runs=[];
+ data.athletes.forEach(a=>{
+  const rs=runsOf(a,s.id);if(!rs.length)return;L.push(a.name);
+  rs.forEach((r,i)=>{
+   const T=totals(r),ints=(r.l||[]).map(l=>fmt(l.c));
+   L.push('  Disc. '+(i+1)+': '+fmt(Number(r.t)+T.tot*1000)+(T.tot?' (tempo '+fmt(r.t)+' + pen '+T.tot+' s)':'')+(ints.length?' · int. '+ints.join(' · '):''));
+   runs.push({a:a.name,r});
+  });
+  L.push('');
+ });
+ L.push(MARK,JSON.stringify({v:1,exp:Date.now(),session:{id:s.id,name:s.name,start:s.start,end:s.end||null},runs}));
+ return L.join('\n');
+}
+const timesFile=s=>new File([timesText(s)],'Tempi_'+slug(s.name)+'_'+stamp()+'.txt',{type:'text/plain'});
+function parseTimes(txt){
+ const i=txt.indexOf(MARK);if(i<0)return null;
+ try{const m=JSON.parse(txt.slice(i+MARK.length).trim());if(m&&m.v===1&&m.session&&m.session.id!=null&&Array.isArray(m.runs))return m}catch{}
+ return null;
+}
+function mergeTimes(m){
+ const sm=m.session;let s=sessById(String(sm.id));
+ if(s&&s.imp&&Number(m.exp)<s.imp)return -1;
+ if(!s){s={id:String(sm.id),name:String(sm.name||'Allenamento'),start:String(sm.start||new Date().toISOString()),end:sm.end?String(sm.end):null};data.sessions.push(s)}
+ else{s.name=String(sm.name||s.name);s.end=sm.end?String(sm.end):null}
+ s.imp=Number(m.exp)||Date.now();
+ const keep=new Set();let n=0;
+ m.runs.forEach(x=>{
+  const nm=String(x&&x.a||'').trim();if(!nm||!x.r||x.r.id==null)return;
+  let a=data.athletes.find(z=>z.name.toLowerCase()===nm.toLowerCase());
+  if(!a){a={id:'a'+Date.now()+Math.random().toString(36).slice(2,6),name:nm,link:'',runs:[]};data.athletes.push(a)}
+  const r=Object.assign({},x.r,{id:String(x.r.id),sid:s.id});
+  const i=a.runs.findIndex(z=>z.id===r.id);if(i>=0)a.runs[i]=r;else a.runs.push(r);
+  keep.add(r.id);n++;
+ });
+ data.athletes.forEach(a=>{a.runs=a.runs.filter(r=>r.sid!==s.id||keep.has(r.id));a.runs.sort((p,q)=>String(p.d).localeCompare(String(q.d)))});
+ viewSid=s.id;return n;
+}
+async function importFiles(files){
+ files=Array.from(files||[]);if(!files.length)return;
+ toast('Importazione in corso…');
+ let nt=0,nr=0,nv=0,old=0,bad=0;const vids=[];
+ for(const f of files){
+  if(/\.txt$/i.test(f.name)||f.type==='text/plain'){
+   let m=null;try{m=parseTimes(await f.text())}catch{}
+   if(!m){bad++;continue}
+   const n=mergeTimes(m);if(n<0)old++;else{nt++;nr+=n}
+  }else if((f.type||'').startsWith('video/')||/\.(mp4|webm|mov|m4v)$/i.test(f.name))vids.push(f);
+  else bad++;
+ }
+ for(const f of vids){
+  const nm=normName(f.name),st=startFromName(nm),dur=await videoDuration(f);
+  const extra={};if(st)extra.st=st;if(dur)extra.dur=dur;
+  const old=data.videos.find(v=>v.name===nm);if(old&&old.off)extra.off=old.off;
+  let sid=null;const hit=videoRuns({name:nm,st:st||null,dur:dur||null,off:extra.off||0})[0];if(hit)sid=hit.r.sid;
+  if(!sid)sid=viewSid||(latestSess()&&latestSess().id)||null;
+  if(!sid){const s=newSession();s.end=new Date().toISOString();sid=s.id}
+  if(await addVideo(nm,f,sid,st||f.lastModified,extra))nv++;
+ }
+ if(!data.current&&data.athletes.length)data.current=data.athletes[0].id;
+ save();renderAll();
+ const msg=[];if(nt)msg.push(nr+' discese');if(nv)msg.push(nv+(nv===1?' video':' video'));if(old)msg.push('file tempi più vecchio ignorato');if(bad)msg.push(bad+' file non riconosciuti');
+ toast(msg.length?'Importato: '+msg.join(' · '):'Niente da importare');
+}
+async function shareFiles(files,title){
+ if(navigator.canShare&&navigator.canShare({files})){
+  try{await navigator.share({files,title});return true}catch(e){if(e.name==='AbortError')return false}
+ }
+ files.forEach((f,i)=>setTimeout(()=>dl(f,f.name),i*700));
+ toast('Condivisione non disponibile: file scaricati');return false;
+}
+async function sendToTablet(name,blob,sid){
+ const s=sessById(sid)||sessById(viewSid)||openSess();
+ const files=[];
+ if(blob)files.push(new File([blob],name,{type:blob.type||'video/mp4'}));
+ if(s)files.push(timesFile(s));
+ if(files.length)await shareFiles(files,'Tempi e Video');
+}
+
 /* ---------- fotocamera e registrazione ---------- */
 const QUAL={'720':{w:1280,h:720,fps:30,br:5e6},'1080':{w:1920,h:1080,fps:30,br:10e6},'1080-60':{w:1920,h:1080,fps:60,br:14e6}};
-let stream=null,facing='environment',rec=null,chunks=[],recording=false,recStart=0,recTimer=null,recRuns=[],lastVideo=null,zoomVal=null;
+let autoAt=0,autoTimer=null;
+const autoSec=()=>data.autoStop==null?5:Number(data.autoStop)||0;
+function clearAuto(){clearTimeout(autoTimer);autoTimer=null;autoAt=0}
+let stream=null,facing='environment',rec=null,chunks=[],recording=false,recStart=0,recTimer=null,recRuns=[],recSid=null,lastVideo=null,zoomVal=null;
 const pickMime=()=>['video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4','video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'].find(m=>window.MediaRecorder&&MediaRecorder.isTypeSupported(m))||'';
 
 async function startCamera(){
@@ -291,48 +605,51 @@ function startRec(){
  if(!stream){toast('Fotocamera non pronta');return}
  const mime=pickMime();const q=QUAL[data.quality]||QUAL['1080'];
  try{rec=new MediaRecorder(stream,Object.assign({videoBitsPerSecond:q.br},mime?{mimeType:mime}:{}))}catch(e){toast('Registrazione non supportata');return}
- chunks=[];recRuns=[];
+ recSid=ensureSession().id;
+ chunks=[];recRuns=[];$('#bSend').hidden=true;
  rec.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data)};
- rec.onstart=()=>{recStart=performance.now();recording=true;$('#saved').hidden=true;recTimer=setInterval(()=>{const s=Math.floor((performance.now()-recStart)/1000);$('#recTime').textContent=Math.floor(s/60)+':'+pad(s%60)},500);$('#recTime').textContent='0:00';ui()};
+ rec.onstart=()=>{recStart=performance.now();recording=true;recTimer=setInterval(recLabel,250);recLabel();ui()};
  rec.onstop=finishRec;
  rec.onerror=()=>{toast('Errore di registrazione')};
  rec.start(1000);buzz();
 }
-function stopRec(){if(rec&&rec.state!=='inactive')rec.stop();buzz()}
-function finishRec(){
- recording=false;clearInterval(recTimer);
+function recLabel(){
+ const s=Math.floor((performance.now()-recStart)/1000);let tx=Math.floor(s/60)+':'+pad(s%60);
+ if(autoAt){tx+=' · stop tra '+Math.max(0,Math.ceil((autoAt-performance.now())/1000))+'s'}
+ $('#recTime').textContent=tx;
+}
+function stopRec(){clearAuto();if(rec&&rec.state!=='inactive')rec.stop();buzz()}
+async function finishRec(){
+ recording=false;clearInterval(recTimer);clearAuto();
  const type=(rec&&rec.mimeType)||'video/webm';
  const blob=new Blob(chunks,{type});chunks=[];
  const ext=/mp4/.test(type)?'mp4':'webm';
  let a=cur();
  if(recRuns.length){const last=recRuns[recRuns.length-1];a=data.athletes.find(x=>x.id===last.a)||a}
  const name=(a?slug(a.name):'video')+'_'+stamp()+'.'+ext;
- lastVideo={blob,name};
+ const sid=recSid;
+ lastVideo={blob,name,sid};
  recRuns.forEach(rr=>{const at=data.athletes.find(x=>x.id===rr.a);const r=at&&at.runs.find(x=>x.id===rr.id);if(r)r.vf=name});
- recRuns=[];save();ui();renderResults();
+ recRuns=[];save();
  dl(blob,name);
- $('#savedName').innerHTML='<b>'+esc(name)+'</b>';$('#saved').hidden=false;
+ $('#bSend').hidden=false;ui();
  toast('Video salvato: '+name);
+ await addVideo(name,blob,sid);
+ renderAll();
 }
 function dl(blob,name){
  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();
  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},5000);
 }
-async function shareVideo(){
- if(!lastVideo)return;
- const f=new File([lastVideo.blob],lastVideo.name,{type:lastVideo.blob.type});
- if(navigator.canShare&&navigator.canShare({files:[f]})){
-  try{await navigator.share({files:[f],title:lastVideo.name})}catch(e){if(e.name!=='AbortError')toast('Condivisione non riuscita')}
- }else toast('Condivisione non supportata: usa il file scaricato');
-}
 
 /* ---------- cronometro ---------- */
-let running=false,t0=0,raf=0,lapsLive=[],livePen=[],runVid0=null,runAth=null,lastRunRef=null;
+let running=false,t0=0,raf=0,lapsLive=[],livePen=[],runVid0=null,runAth=null,runSid=null,lastRunRef=null;
 function tick(){if(!running)return;$('#clock').textContent=fmt(performance.now()-t0);raf=requestAnimationFrame(tick)}
 function startT(){
  if(running)return;
- if(!cur()){toast('Scegli o aggiungi un atleta');showTempi(true);return}
- running=true;runAth=cur().id;lapsLive=[];livePen=[];lastRunRef=null;t0=performance.now();
+ if(!cur()){toast('Scegli o aggiungi un atleta');showTempi('atleti',true);return}
+ runSid=ensureSession().id;
+ running=true;runAth=cur().id;lapsLive=[];livePen=[];lastRunRef=null;t0=performance.now();clearAuto();if(recording)recLabel();
  runVid0=recording?Math.round(t0-recStart):null;
  renderLive();tick();buzz();
 }
@@ -349,32 +666,33 @@ function stopT(){
  const t=Math.round(now-t0);$('#clock').textContent=fmt(t);
  const a=data.athletes.find(x=>x.id===runAth);
  if(a){
-  const run={id:String(Date.now()),d:new Date().toISOString(),t,l:lapsLive,sv:runVid0,tv:recording?Math.round(now-recStart):null,vf:null,pe:livePen};
+  const run={id:String(Date.now()),sid:runSid,d:new Date().toISOString(),t,l:lapsLive,sv:runVid0,tv:recording?Math.round(now-recStart):null,vf:null,pe:livePen};
   a.runs.push(run);lastRunRef={a:a.id,id:run.id};
   if(recording)recRuns.push({a:a.id,id:run.id});
   save();
  }
- lapsLive=[];livePen=[];renderLive();renderResults();buzz();
+ if(recording&&autoSec()>0){autoAt=performance.now()+autoSec()*1000;clearTimeout(autoTimer);autoTimer=setTimeout(stopRec,autoSec()*1000);recLabel()}
+ lapsLive=[];livePen=[];renderAll();buzz();
 }
 
 /* ---------- penalità: comandi ---------- */
 function lastRun(){
  if(!lastRunRef)return null;
  const a=data.athletes.find(x=>x.id===lastRunRef.a);if(!a)return null;
- const i=a.runs.findIndex(x=>x.id===lastRunRef.id);
- return i<0?null:{a,r:a.runs[i],n:i+1};
+ const r=a.runs.find(x=>x.id===lastRunRef.id);
+ return r?{a,r,n:runNo(a,r)}:null;
 }
 function penTarget(){
- if(running)return{label:'Pen. → tratto '+(lapsLive.length+1)};
+ if(running)return{label:'Pen. tratto '+(lapsLive.length+1)};
  const L=lastRun();
- return L?{label:'Pen. → '+L.a.name+' · prova '+L.n+' (solo totale)'}:null;
+ return L?{label:'Pen. prova '+L.n}:null;
 }
 function addPen(k){
  if(running){livePen.push({s:lapsLive.length,k});renderLive();buzz();return}
  const L=lastRun();
  if(!L){toast('Nessuna prova a cui aggiungere');return}
  (L.r.pe=Array.isArray(L.r.pe)?L.r.pe:[]).push({s:-1,k});
- save();renderLive();renderResults();buzz();
+ save();renderAll();buzz();
 }
 function undoPen(){
  if(running){if(livePen.length){livePen.pop();renderLive();buzz()}else toast('Nessuna penalità da annullare');return}
@@ -382,7 +700,7 @@ function undoPen(){
  const pe=Array.isArray(L.r.pe)?L.r.pe:[];let i=-1;
  pe.forEach((e,k)=>{if(Number(e.s)===-1)i=k});
  if(i<0){toast('Nessuna penalità aggiunta dopo l\'arrivo');return}
- pe.splice(i,1);save();renderLive();renderResults();buzz();
+ pe.splice(i,1);save();renderAll();buzz();
 }
 
 /* ---------- interfaccia ---------- */
@@ -424,43 +742,114 @@ function renderChips(){
 function renderResults(){
  const a=cur(),box=$('#results');
  if(!a){box.innerHTML='';return}
- const runs=a.runs.map((r,i)=>runHTML(r,i,true)).reverse().join('')||'<p class="mut">Nessuna prova ancora.</p>';
+ const rs=runsOf(a,viewSid);
+ const runs=rs.map((r,i)=>runHTML(r,i,true)).reverse().join('')||'<p class="mut">Nessuna prova in questo allenamento.</p>';
  box.innerHTML=`<div class="rh"><h2>${esc(a.name)}</h2><button class="btn ghost sm" data-act="delath">Elimina atleta</button></div>
  <label class="lk">Link del video per l'atleta (opzionale, es. Drive)<input id="vlink" type="url" inputmode="url" placeholder="Incolla qui il link" value="${esc(a.link||'')}"></label>
- <div class="row"><button class="btn ghost" data-act="shareT">Condividi tempi</button><button class="btn ghost" data-act="csv">Esporta CSV</button></div>${runs}`;
+ <div class="row"><button class="btn ghost" data-act="shareT">Condividi tempi (link)</button></div>${runs}`;
 }
-function setCurrent(id){
- data.current=id;save();renderChips();renderAth();renderResults();renderLive();
+function renderTitle(){
+ const s=sessById(viewSid);
+ $('#tTitle').textContent=s?s.name:'Allenamento';
+ const b=$('#vbanner');
+ if(s&&viewSid!==defView()){
+  b.hidden=false;b.innerHTML=`<span>Stai guardando «${esc(s.name)}»${s.end?' (chiuso)':''}</span><button class="btn ghost sm" data-ban="back">Torna all'attuale</button>`;
+ }else b.hidden=true;
 }
-function showTempi(focusNew){
- $('#tempi').hidden=false;
+function renderTable(){
+ const box=$('#sessTable'),s=sessById(viewSid);
+ const vm=runVideoMap();
+ const pl=r=>{const x=vm.get(r);return x?' <button class="pl" data-pv="'+esc(x.v.name)+'" data-id="'+esc(r.id)+'" aria-label="Guarda il video">▶</button>':''};
+ if(!s){box.innerHTML='<p class="mut">Nessun allenamento. Premi START nella schermata di ripresa per iniziarne uno.</p>';return}
+ const ath=data.athletes.map(a=>({a,rs:runsOf(a,s.id)})).filter(x=>x.rs.length);
+ ath.sort((x,y)=>String(x.rs[0].d).localeCompare(String(y.rs[0].d)));
+ if(!ath.length){box.innerHTML='<p class="mut">Ancora nessuna discesa in questo allenamento.</p>';return}
+ let maxL=0;ath.forEach(x=>x.rs.forEach(r=>{maxL=Math.max(maxL,Array.isArray(r.l)?r.l.length:0)}));
+ const head='<tr><th class="l">Atleta</th><th>Disc.</th>'+Array.from({length:maxL},(_,k)=>'<th>Int. '+(k+1)+'</th>').join('')+'<th>Tempo</th><th>Pen.</th><th>Finale</th></tr>';
+ const body=ath.map(({a,rs})=>{
+  const T=rs.map(r=>totals(r)),finals=rs.map((r,i)=>(Number(r.t)||0)+T[i].tot*1000),best=Math.min(...finals);
+  return '<tbody class="ath">'+rs.map((r,i)=>{
+   const l=Array.isArray(r.l)?r.l:[];
+   const cells=Array.from({length:maxL},(_,k)=>l[k]?'<td>'+fmt(l[k].c)+(penTxt(T[i].pe,k)?' '+penTxt(T[i].pe,k):'')+'</td>':'<td class="mut">–</td>').join('');
+   const pa=penTxt(T[i].pe,l.length);
+   return '<tr>'+(i===0?`<td class="an" rowspan="${rs.length}"><b>${esc(a.name)}</b><div class="mut">Migliore ${fmt(best)}</div></td>`:'')
+    +`<td>${i+1}${pl(r)}</td>${cells}<td>${fmt(r.t)}${pa?' '+pa:''}</td><td>${T[i].tot?'+'+T[i].tot:'<span class="mut">–</span>'}</td><td class="fn${finals[i]===best?' best':''}">${fmt(finals[i])}</td></tr>`;
+  }).join('')+'</tbody>';
+ }).join('');
+ box.innerHTML=`<div class="tw"><table class="st"><thead>${head}</thead>${body}</table></div>`;
+}
+function renderVideos(){
+ const box=$('#vidList'),s=sessById(viewSid);
+ if(!s){box.innerHTML='<p class="mut">Nessun video.</p>';return}
+ const vids=data.videos.filter(v=>vidSessions(v).includes(s.id));
+ if(!vids.length){box.innerHTML='<p class="mut">Nessun video in questo allenamento.'+(isTablet()?' Importa i file ricevuti dal telefono con il tasto «Importa».':'')+'</p>';return}
+ const groups={};
+ vids.forEach(v=>{
+  const runs=videoRuns(v).filter(x=>x.r.sid===s.id);
+  const names=[...new Set(runs.map(x=>x.a.name))];
+  const key=names.length?names.join(', '):'Senza discese collegate';
+  (groups[key]=groups[key]||[]).push({v,runs});
+ });
+ box.innerHTML=Object.keys(groups).sort((x,y)=>x.localeCompare(y)).map(k=>`<div class="vg"><h2>${esc(k)}</h2>`+groups[k].sort((x,y)=>(x.v.st||x.v.at)-(y.v.st||y.v.at)).map(({v,runs})=>{
+  const when=whenLong(v.st||(runs[0]?runs[0].r.d:v.at));
+  const lines=runs.map(x=>`<div class="vr"><span>${esc(x.a.name)} · discesa ${runNo(x.a,x.r)} · <b>${fmt((Number(x.r.t)||0)+totals(x.r).tot*1000)}</b></span><button class="btn go sm" data-vact="playrun" data-n="${esc(v.name)}" data-id="${esc(x.r.id)}">▶ Da qui</button></div>`).join('');
+  return `<div class="vcard"><div class="mut">${esc(when)} · ${Math.max(1,Math.round((v.size||0)/1048576))} MB · ${esc(v.name)}</div>${lines||'<div class="mut" style="margin-top:6px">Nessuna discesa collegata a questo video (controlla che il nome file contenga data e ora, es. 20261121_095012).</div>'}
+  <div class="row"><button class="btn ghost sm" data-vact="play" data-n="${esc(v.name)}">▶ Guarda tutto</button><button class="btn ghost sm" data-vact="dl" data-n="${esc(v.name)}">Scarica</button><button class="btn ghost sm" data-vact="share" data-n="${esc(v.name)}" data-sid="${esc(v.sid)}">${isTablet()?'Condividi':'Invia al tablet'}</button><button class="btn ghost sm" data-vact="del" data-n="${esc(v.name)}" style="margin-left:auto">Elimina</button></div></div>`;
+ }).join('')+'</div>').join('');
+}
+function renderSessions(){
+ const box=$('#sessBox'),tab=isTablet(),o=openSess();let h='';
+ if(!tab){
+  h+=o?`<div class="run"><div class="mut">Allenamento aperto</div><input id="sname" value="${esc(o.name)}" aria-label="Nome allenamento" style="margin-top:6px"><div class="mut" style="margin-top:6px">Iniziato ${esc(whenLong(o.start))} · ${countRuns(o.id)} discese</div><div class="row"><button class="btn ghost sm" data-sact="close">Chiudi allenamento</button><button class="btn go sm" data-sact="new">Chiudi e inizia un nuovo allenamento</button></div></div>`
+   :`<div class="row" style="margin-top:0"><button class="btn go" data-sact="new">Nuovo allenamento</button></div><p class="mut">Se non ne apri uno tu, parte da solo alla prima discesa o alla prima registrazione.</p>`;
+ }
+ const list=data.sessions.slice().sort((a,b)=>String(b.start).localeCompare(String(a.start)));
+ h+='<p class="lbl">Tutti gli allenamenti</p>'+(list.map(s=>`<div class="run"><div><b>${esc(s.name)}</b>${(!s.end&&!tab)?' <span class="p2">aperto</span>':''}</div><div class="mut">${esc(whenLong(s.start))} · ${countRuns(s.id)} discese · ${data.videos.filter(v=>vidSessions(v).includes(s.id)).length} video</div><div class="row"><button class="btn ghost sm" data-sact="view" data-id="${esc(s.id)}">Vedi</button><button class="btn ghost sm" data-sact="del" data-id="${esc(s.id)}" style="margin-left:auto">Elimina</button></div></div>`).join('')||'<p class="mut">Nessun allenamento.</p>');
+ box.innerHTML=h;
+}
+function renderAll(){
+ if(!viewSid||!sessById(viewSid))viewSid=defView();
+ renderTitle();renderTable();renderVideos();renderChips();renderAth();renderResults();renderSessions();renderLive();
+}
+function setCurrent(id){data.current=id;save();renderAll()}
+
+let curTab='tempi';
+function showTab(t){
+ curTab=t;
+ const map={tempi:'pTempi',video:'pVideo',atleti:'pAtleti',sess:'pSess',imp:'pImp'};
+ Object.keys(map).forEach(k=>{$('#'+map[k]).hidden=k!==t});
+ document.querySelectorAll('#tabs .tab').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
+ $('#tempi').scrollTop=0;
+}
+function showTempi(tab,focusNew){
+ $('#tempi').hidden=false;showTab(tab||'tempi');
  if(focusNew)setTimeout(()=>{try{$('#newA').focus()}catch{}},50);
 }
-function hideTempi(){$('#tempi').hidden=true}
+function hideTempi(){if(!isTablet())$('#tempi').hidden=true}
 
 function summary(a){
- return a.name+'\n'+a.runs.map((r,i)=>{
-  let prev=0;const T=totals(r);
-  const ints=(r.l||[]).map(l=>{const s=fmt(l.c-prev);prev=l.c;return s});
-  return 'Prova '+(i+1)+': '+fmt(r.t+T.tot*1000)+(T.tot?' (tempo '+fmt(r.t)+' + pen '+T.tot+' s)':'')+(ints.length?' · int. '+ints.join(' · '):'');
+ return a.name+'\n'+runsOf(a,viewSid).map((r,i)=>{
+  const T=totals(r),ints=(r.l||[]).map(l=>fmt(l.c));
+  return 'Prova '+(i+1)+': '+fmt(Number(r.t)+T.tot*1000)+(T.tot?' (tempo '+fmt(r.t)+' + pen '+T.tot+' s)':'')+(ints.length?' · int. '+ints.join(' · '):'');
  }).join('\n');
 }
 async function shareTimes(){
- const a=cur();if(!a||!a.runs.length){toast('Nessun tempo da condividere');return}
- const runs=a.runs.map(r=>({d:r.d,t:r.t,l:(r.l||[]).map(x=>({c:x.c,v:x.v})),sv:r.sv,tv:r.tv,pe:r.pe||[]}));
- const url=location.origin+location.pathname+'#v='+enc({n:a.name,u:a.link||'',r:runs});
- if(navigator.share){try{await navigator.share({title:'Tempi '+a.name,text:summary(a),url});return}catch(e){if(e.name==='AbortError')return}}
- try{await navigator.clipboard.writeText(url);toast('Link copiato')}catch{toast('Copia non riuscita')}
+ const a=cur();const rs=a?runsOf(a,viewSid):[];if(!a||!rs.length){toast('Nessun tempo da condividere')}else{
+  const runs=rs.map(r=>({d:r.d,t:r.t,l:(r.l||[]).map(x=>({c:x.c,v:x.v})),sv:r.sv,tv:r.tv,pe:r.pe||[]}));
+  const url=location.origin+location.pathname+'#v='+enc({n:a.name,u:a.link||'',r:runs});
+  if(navigator.share){try{await navigator.share({title:'Tempi '+a.name,text:summary(a),url});return}catch(e){if(e.name==='AbortError')return}}
+  try{await navigator.clipboard.writeText(url);toast('Link copiato')}catch{toast('Copia non riuscita')}
+ }
 }
 function csv(){
- const L=[['Atleta','Prova','Data','Punto','Parziale','Totale','Penalità tratto (s)','Tempo nel video','File video','Penalità totali (s)','Tempo finale']];
- data.athletes.forEach(a=>a.runs.forEach((r,i)=>{
-  const T=totals(r),d=new Date(r.d).toLocaleString('it-IT'),l=r.l||[];let prev=0;
-  const ps=s=>T.pe.filter(e=>Number(e.s)===s).reduce((x,e)=>x+(Number(e.k)===50?50:2),0);
-  l.forEach((x,k)=>{L.push([a.name,i+1,d,'Intertempo '+(k+1),fmt(x.c-prev),fmt(x.c),ps(k),x.v!=null?fmt(x.v):'',r.vf||'','','']);prev=x.c});
-  L.push([a.name,i+1,d,'Arrivo',fmt(r.t-prev),fmt(r.t),ps(l.length),r.tv!=null?fmt(r.tv):'',r.vf||'',T.tot,fmt(r.t+T.tot*1000)]);
-  if(T.pe.some(e=>Number(e.s)===-1))L.push([a.name,i+1,d,"Dopo l'arrivo",'','',ps(-1),'','','','']);
- }));
+ const L=[['Allenamento','Atleta','Prova','Data','Punto','Parziale','Totale','Penalità tratto (s)','Tempo nel video','File video','Penalità totali (s)','Tempo finale']];
+ data.sessions.slice().sort((a,b)=>String(a.start).localeCompare(String(b.start))).forEach(s=>data.athletes.forEach(a=>runsOf(a,s.id).forEach((r,i)=>{
+  const T=totals(r),d=whenLong(r.d),l=r.l||[];let prev=0;
+  const ps=k=>T.pe.filter(e=>Number(e.s)===k).reduce((x,e)=>x+(Number(e.k)===50?50:2),0);
+  l.forEach((x,k)=>{L.push([s.name,a.name,i+1,d,'Intertempo '+(k+1),fmt(x.c-prev),fmt(x.c),ps(k),x.v!=null?fmt(x.v):'',r.vf||'','','']);prev=x.c});
+  L.push([s.name,a.name,i+1,d,'Arrivo',fmt(r.t-prev),fmt(r.t),ps(l.length),r.tv!=null?fmt(r.tv):'',r.vf||'',T.tot,fmt(r.t+T.tot*1000)]);
+  if(T.pe.some(e=>Number(e.s)===-1))L.push([s.name,a.name,i+1,d,"Dopo l'arrivo",'','',ps(-1),'','','','']);
+ })));
  const s='﻿'+L.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(';')).join('\r\n');
  dl(new Blob([s],{type:'text/csv;charset=utf-8'}),'tempi_'+stamp()+'.csv');
 }
@@ -468,6 +857,16 @@ function arm(b,fn){
  if(b.dataset.arm){fn();return}
  b.dataset.arm='1';const old=b.textContent;b.textContent='Conferma?';b.classList.add('armed');
  setTimeout(()=>{if(b.isConnected){delete b.dataset.arm;b.textContent=old;b.classList.remove('armed')}},3000);
+}
+async function deleteSession(id){
+ const vids=data.videos.filter(v=>{const ss=vidSessions(v);return ss.length===1&&ss[0]===id});
+ for(const v of vids){try{await blobDel(v.name)}catch{}}
+ data.videos=data.videos.filter(v=>!vids.includes(v));
+ data.athletes.forEach(a=>{a.runs=a.runs.filter(r=>r.sid!==id)});
+ data.sessions=data.sessions.filter(s=>s.id!==id);
+ if(lastRunRef&&!lastRun())lastRunRef=null;
+ if(viewSid===id)viewSid=defView();
+ save();renderAll();
 }
 
 /* ---------- eventi ---------- */
@@ -478,14 +877,23 @@ function bind(){
   try{await document.documentElement.requestFullscreen();if(screen.orientation&&screen.orientation.lock)await screen.orientation.lock('landscape')}catch{toast('Non disponibile qui')}
  };
  $('#quality').onchange=e=>{data.quality=e.target.value;save();startCamera()};
+ $('#autoStop').onchange=e=>{data.autoStop=Number(e.target.value);save()};
+ $('#devMode').onchange=e=>{data.mode=['tablet','camera'].includes(e.target.value)?e.target.value:'timer';save();location.reload()};
  $('#zoom').oninput=e=>applyZoom(e.target.value);
  $('#bStart').onclick=startT;$('#bLap').onclick=lapT;$('#bStop').onclick=stopT;
  $('#p2').onclick=()=>addPen(2);$('#p50').onclick=()=>addPen(50);$('#pUndo').onclick=undoPen;
- $('#bTempi').onclick=()=>showTempi(false);$('#bBack').onclick=hideTempi;
- $('#btnShareV').onclick=shareVideo;
- $('#btnAgain').onclick=()=>lastVideo&&dl(lastVideo.blob,lastVideo.name);
+ $('#bTempi').onclick=()=>showTempi('tempi');$('#bBack').onclick=hideTempi;
+ $('#bSend').onclick=()=>{if(lastVideo)sendToTablet(lastVideo.name,lastVideo.blob,lastVideo.sid)};
+ $('#bSendT').onclick=()=>{const s=sessById(viewSid);if(s)shareFiles([timesFile(s)],'Tempi');else toast('Nessun allenamento')};
+ $('#bCsv').onclick=csv;
+ $('#bImport').onclick=()=>$('#impF').click();
+ $('#impF').onchange=async e=>{const f=e.target.files;await importFiles(f);e.target.value=''};
+ $('#pvClose').onclick=closePlayer;$('#pvM').onclick=()=>adjSync(-500);$('#pvP').onclick=()=>adjSync(500);
+ $('#sessTable').onclick=e=>{const b=e.target.closest('[data-pv]');if(b)playVideo(b.dataset.pv,b.dataset.id)};
+ $('#tabs').onclick=e=>{const b=e.target.closest('.tab');if(b)showTab(b.dataset.tab)};
+ $('#vbanner').onclick=e=>{if(e.target.closest('[data-ban]')){viewSid=defView();renderAll()}};
  $('#athSel').onchange=e=>{
-  if(e.target.value==='__new'){renderAth();showTempi(true);return}
+  if(e.target.value==='__new'){renderAth();showTempi('atleti',true);return}
   if(e.target.value)setCurrent(e.target.value);
  };
  $('#addF').onsubmit=e=>{
@@ -499,35 +907,79 @@ function bind(){
   const b=e.target.closest('[data-act]');if(!b)return;const act=b.dataset.act,a=cur();
   const run=a&&a.runs.find(x=>x.id===b.dataset.id);
   if(act==='shareT')shareTimes();
-  else if(act==='csv')csv();
-  else if(act==='px2'||act==='px50'){if(run){(run.pe=Array.isArray(run.pe)?run.pe:[]).push({s:-1,k:act==='px2'?2:50});save();renderResults();renderLive()}}
+  else if(act==='px2'||act==='px50'){if(run){(run.pe=Array.isArray(run.pe)?run.pe:[]).push({s:-1,k:act==='px2'?2:50});save();renderAll()}}
   else if(act==='pxundo'){
    if(run){
     const pe=Array.isArray(run.pe)?run.pe:[];let i=-1;pe.forEach((x,k)=>{if(Number(x.s)===-1)i=k});
-    if(i>=0){pe.splice(i,1);save();renderResults();renderLive()}else toast("Nessuna penalità aggiunta dopo l'arrivo");
+    if(i>=0){pe.splice(i,1);save();renderAll()}else toast("Nessuna penalità aggiunta dopo l'arrivo");
    }
   }
-  else if(act==='delrun')arm(b,()=>{a.runs=a.runs.filter(r=>r.id!==b.dataset.id);if(lastRunRef&&lastRunRef.id===b.dataset.id)lastRunRef=null;save();renderResults();renderLive()});
+  else if(act==='delrun')arm(b,()=>{a.runs=a.runs.filter(r=>r.id!==b.dataset.id);if(lastRunRef&&lastRunRef.id===b.dataset.id)lastRunRef=null;save();renderAll()});
   else if(act==='delath')arm(b,()=>{
    data.athletes=data.athletes.filter(x=>x.id!==a.id);
    if(lastRunRef&&lastRunRef.a===a.id)lastRunRef=null;
    data.current=data.athletes.length?data.athletes[0].id:null;
-   save();renderChips();renderAth();renderResults();renderLive();
+   save();renderAll();
   });
+ };
+ $('#vidList').onclick=async e=>{
+  const b=e.target.closest('[data-vact]');if(!b)return;const act=b.dataset.vact,n=b.dataset.n;
+  if(act==='play')playVideo(n);
+  else if(act==='playrun')playVideo(n,b.dataset.id);
+  else if(act==='dl'||act==='share'){
+   let blob=null;try{blob=await blobGet(n)}catch{}
+   if(!blob){toast('Video non disponibile su questo dispositivo');return}
+   if(act==='dl')dl(blob,n);
+   else if(isTablet())shareFiles([new File([blob],n,{type:blob.type||'video/mp4'})],n);
+   else sendToTablet(n,blob,b.dataset.sid);
+  }
+  else if(act==='del')arm(b,async()=>{try{await blobDel(n)}catch{}data.videos=data.videos.filter(v=>v.name!==n);save();renderAll()});
+ };
+ $('#sessBox').addEventListener('change',e=>{
+  if(e.target.id==='sname'){const o=openSess();if(o){o.name=e.target.value.trim()||o.name;save();renderTitle()}}
+ });
+ $('#sessBox').onclick=e=>{
+  const b=e.target.closest('[data-sact]');if(!b)return;const act=b.dataset.sact;
+  if(act==='close'){if(running){toast('Ferma prima il cronometro');return}closeSession(openSess());viewSid=defView();renderAll();toast('Allenamento chiuso')}
+  else if(act==='new'){if(running){toast('Ferma prima il cronometro');return}closeSession(openSess());const s=newSession();renderAll();showTab('tempi');toast('Nuovo allenamento: '+s.name)}
+  else if(act==='view'){viewSid=b.dataset.id;renderAll();showTab('tempi')}
+  else if(act==='del'){
+   const id=b.dataset.id;
+   arm(b,()=>{
+    if(running&&runSid===id){toast('Ferma prima il cronometro');return}
+    deleteSession(id);
+   });
+  }
  };
 }
 let wake=null;
 async function wl(){try{if(navigator.wakeLock)wake=await navigator.wakeLock.request('screen')}catch{}}
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&document.body.classList.contains('app')){wl();ensureCam()}});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&document.body.classList.contains('app')){wl();if(document.body.classList.contains('camera'))ensureCam()}});
+
+async function launchCheck(){
+ const o=openSess();if(!o)return;
+ const last=lastActivity(o);
+ if(Date.now()-new Date(last).getTime()>6*3600e3){
+  const r=await ask('C\'è un allenamento ancora aperto: «'+o.name+'», ultima attività '+whenLong(last)+'. Vuoi continuarlo o iniziarne uno nuovo?',[{t:'Continua',v:'c'},{t:'Nuovo allenamento',v:'n',cls:'go'}]);
+  if(r==='n'){closeSession(o);const s=newSession();renderAll();toast('Nuovo allenamento: '+s.name)}
+ }
+}
 
 function init(){
- document.body.classList.add('app');
- $('#cam').hidden=false;
+ document.body.classList.add('app',data.mode);
+ const tablet=data.mode==='tablet';
+ $('#bBack').textContent=data.mode==='camera'?'← Ripresa':'← Cronometro';
  if(!data.current&&data.athletes.length)data.current=data.athletes[0].id;
- $('#quality').value=data.quality;
- bind();renderChips();renderAth();renderResults();renderLive();
- startCamera();wl();
- try{if(screen.orientation&&screen.orientation.lock)screen.orientation.lock('landscape').catch(()=>{})}catch{}
+ viewSid=defView();
+ $('#quality').value=data.quality;$('#autoStop').value=String(autoSec());$('#devMode').value=data.mode;
+ bind();renderAll();
+ try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch{}
+ if(tablet){showTempi('tempi')}
+ else{
+  $('#cam').hidden=false;wl();
+  if(data.mode==='camera'){startCamera();try{if(screen.orientation&&screen.orientation.lock)screen.orientation.lock('landscape').catch(()=>{})}catch{}}
+  launchCheck();
+ }
  if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
 
